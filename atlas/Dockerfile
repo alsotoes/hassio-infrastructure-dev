@@ -32,6 +32,7 @@ RUN mkdir -p /config
 COPY --from=builder /app/data/html/ /usr/share/nginx/html/
 COPY --from=builder /atlas /config/bin/atlas
 COPY --from=builder /app/config/scripts /config/scripts
+COPY --from=builder /app/config/nginx /config/nginx
 
 # Make all shell scripts executable
 RUN if [ -d /config/scripts ]; then \
@@ -41,8 +42,5 @@ RUN if [ -d /config/scripts ]; then \
 # Set default ports (can be overridden at runtime)
 ENV ATLAS_UI_PORT=8888
 ENV ATLAS_API_PORT=8889
-
 # Entrypoint: initializes DB, runs scans, launches FastAPI and Nginx
-EXPOSE 8888/tcp 
-EXPOSE 8889/tcp
 CMD ["/config/scripts/atlas_check.sh"]
