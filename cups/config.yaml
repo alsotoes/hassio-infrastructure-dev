@@ -2,6 +2,7 @@
 name: CUPS Print Server
 slug: cups
 description: "CUPS printing system with Avahi for AirPrint/IPP and Web Admin"
+url: "https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/cups"
 version: "1.4.3"
 arch:
   - aarch64

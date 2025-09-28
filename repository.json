@@ -1,5 +1,5 @@
 {
-    "name": "Infrastructure add-ons",
-    "url": "https://github.com/alsotoes/hassio-infrastructure",
+    "name": "Infrastructure add-ons (dev repo)",
+    "url": "https://github.com/alsotoes/hassio-infrastructure-dev",
     "maintainer": "Alvaro Soto <alsotoes@gmail.com>"
 }

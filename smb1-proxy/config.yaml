@@ -3,7 +3,7 @@ name: SMB1 Proxy
 slug: smb1_proxy
 description: "Bridge legacy SMB1 devices (Apple Time Capsule) to modern SMB2/3 with web monitoring and auto-recovery."
 version: "1.3.2"
-url: "https://github.com/alsotoes/hassio-infrastructure/tree/main/smb1-proxy"
+url: "https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/smb1-proxy"
 arch:
   - aarch64
   - amd64
