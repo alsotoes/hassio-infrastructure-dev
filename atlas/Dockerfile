@@ -25,7 +25,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 # hadolint ignore=SC1091
 RUN source /opt/venv/bin/activate \ 
     && pip install --no-cache-dir fastapi uvicorn \
-    && rm -f /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default || true
+    && rm -f /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default || true \
+    && mkdir -p /etc/nginx/conf.d || true
 
 # Copy from builder stage
 RUN mkdir -p /config

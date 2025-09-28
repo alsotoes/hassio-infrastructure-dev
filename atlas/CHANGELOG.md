@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.12
+
+- Fix nginx path for configurations missing
+
 ## 0.0.11
 
 - Rebuilt Go scanner with musl toolchain for compatibility
