@@ -1,21 +1,33 @@
 ---
 name: etcd Server
-version: "0.1.4"
+version: "0.2.0"
 slug: etcd
 description: A distributed, reliable key-value store for the most critical data of a distributed system
 url: https://github.com/alsotoes/hassio-infrastructure/tree/main/etcd
-init: false
+init: true
 arch:
   - armv7
+  - armhf
   - aarch64
   - amd64
 panel_admin: false
 ports:
   2379/tcp: 2379
   2380/tcp: 2380
+ports_description:
+  2379/tcp: "etcd client port"
+  2380/tcp: "etcd peer port"
 startup: system
 timeout: 300
-apparmor: false
+apparmor: true
 map:
   - type: data
     read_only: false
+options:
+  log_level: "info"
+  initial_cluster: ""
+  initial_cluster_state: "new"
+schema:
+  log_level: "list(debug|info|warn|error|panic|fatal)"
+  initial_cluster: "str?"
+  initial_cluster_state: "list(new|existing)"

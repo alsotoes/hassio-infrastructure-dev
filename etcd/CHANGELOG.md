@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+- Bump etcd version to v3.6.5
+- Fix s6-overlay download for amd64
+- Remove hardcoded BUILD_ARCH
+- Add schema for configuration options
+- Improve Dockerfile caching and reduce image size
+- Update base images to a specific version
+- Add support for armhf
+- Use s6-overlay for process supervision
+- Add AppArmor profile
+
 ## 0.1.4
 
 - Disable: AppArmor security profile to resolve startup issues

@@ -1,0 +1,14 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+exec /usr/local/bin/etcd \
+    --data-dir "${etcd_data_dir}" \
+    --name "${etcd_name}" \
+    --initial-cluster-state "${etcd_initial_cluster_state}" \
+    --listen-client-urls "${etcd_listen_client_urls}" \
+    --advertise-client-urls "${etcd_advertise_client_urls}" \
+    --listen-peer-urls "${etcd_listen_peer_urls}" \
+    --initial-advertise-peer-urls "${etcd_initial_advertise_peer_urls}" \
+    --initial-cluster "${etcd_initial_cluster}" \
+    --log-level "${etcd_log_level}" \
+    --log-outputs stderr

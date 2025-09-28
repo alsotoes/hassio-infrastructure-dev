@@ -1,0 +1,62 @@
+#!/command/with-contenv bash
+# -*- coding: utf-8 -*-
+# ==============================================================================
+#
+# Community Hass.io Add-ons: etcd
+#
+# This file is part of the Community Hass.io Add-ons project.
+#
+# And provides some Hass.io specific functionality when booting up.
+#
+# Copyright (C) 2019-2020 Franck Nijhof
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# ==============================================================================
+declare etcd_advertise_client_urls
+declare etcd_advertise_peer_urls
+declare etcd_data_dir
+declare etcd_initial_advertise_peer_urls
+declare etcd_initial_cluster
+declare etcd_initial_cluster_state
+declare etcd_listen_client_urls
+declare etcd_listen_peer_urls
+declare etcd_name
+declare etcd_log_level
+
+etcd_data_dir=/data
+if ! hass.directory_exists "${etcd_data_dir}"; then
+    mkdir -p "${etcd_data_dir}"
+fi
+
+etcd_name=$(hass.string.lower "$(hostname)")
+etcd_log_level=$(hass.config.get 'log_level' 'info')
+etcd_initial_cluster=$(hass.config.get 'initial_cluster' "${etcd_name}=http://$(hostname):2380")
+etcd_initial_cluster_state=$(hass.config.get 'initial_cluster_state' 'new')
+if hass.directory_exists '/data/members'; then
+    etcd_initial_cluster_state="existing"
+fi
+
+{
+    echo "etcd_name="${etcd_name}""
+    echo "etcd_data_dir="${etcd_data_dir}""
+    echo "etcd_initial_cluster_state="${etcd_initial_cluster_state}""
+    echo "etcd_listen_client_urls="${etcd_listen_client_urls}""
+    echo "etcd_advertise_client_urls="${etcd_advertise_client_urls}""
+    echo "etcd_listen_peer_urls="${etcd_listen_peer_urls}""
+    echo "etcd_initial_advertise_peer_urls="${etcd_initial_advertise_peer_urls}""
+    echo "etcd_initial_cluster="${etcd_initial_cluster}""
+    echo "etcd_log_level="${etcd_log_level}""
+} > /etc/services.d/etcd/run.env
+
