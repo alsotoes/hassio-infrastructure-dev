@@ -27,12 +27,11 @@ RUN source /opt/venv/bin/activate \
     && pip install --no-cache-dir fastapi uvicorn \
     && rm -f /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default || true
 
-ENV ATLAS_HOME=/config
 # Copy from builder stage
-RUN mkdir -p ${ATLAS_HOME}
+RUN mkdir -p /config
 COPY --from=builder /app/data/html/ /usr/share/nginx/html/
 COPY --from=builder /atlas /config/bin/atlas
-COPY --from=builder /app/config/scripts ${ATLAS_HOME}
+COPY --from=builder /app/config/scripts /config/scripts
 
 # Make all shell scripts executable
 RUN if [ -d /config/scripts ]; then \
