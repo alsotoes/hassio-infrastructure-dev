@@ -1,10 +1,11 @@
 ---
 name: Atlas
-version: "0.0.10"
+version: "0.0.11"
 logo: logo.png
 icon: icon.png
 slug: atlas
 description: Network Infrastructure Visualizer
+url: "https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/atlas"
 arch:
   - amd64
   - aarch64

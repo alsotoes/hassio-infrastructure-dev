@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.11
+
+- Rebuilt Go scanner with musl toolchain for compatibility
+- Relocated atlas binary and adjusted startup scripts
+
 ## 0.0.10
 
 - Proped WebUI configuration

@@ -9,6 +9,13 @@ log() {
   printf "%s 🔹 %s\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$1" | tee -a "$LOGFILE"
 }
 
+ATLAS_HOME=${ATLAS_HOME:-/opt/atlas}
+ATLAS_BIN=${ATLAS_BIN:-/usr/local/bin/atlas}
+
+run_atlas() {
+  ( cd "$ATLAS_HOME" && "$ATLAS_BIN" "$@" )
+}
+
 ATLAS_UI_PORT=$(bashio::addon.port 8888)
 ATLAS_API_PORT=$(bashio::addon.port 8889)
 
@@ -21,16 +28,16 @@ else
 fi
 
 # Ensure Go binary exists
-if [[ ! -x /config/bin/atlas ]]; then
-  log "❌ Missing /config/bin/atlas (Go scanner). Scans will fail."
+if [[ ! -x "$ATLAS_BIN" ]]; then
+  log "❌ Missing $ATLAS_BIN (Go scanner). Scans will fail."
 else
   log "✅ Found atlas binary."
 fi
 
 # Initialize DB BEFORE starting API to avoid early 500s
-if [[ -x /config/bin/atlas ]]; then
+if [[ -x "$ATLAS_BIN" ]]; then
   log "📦 Initializing database..."
-  if /config/bin/atlas initdb >> /config/logs/scan_audit.log 2>&1; then
+  if run_atlas initdb >> /config/logs/scan_audit.log 2>&1; then
     log "✅ Database initialized."
   else
     log "❌ Database init failed (see scan_audit.log)."
@@ -39,21 +46,21 @@ fi
 
 # Start FastAPI
 log "🚀 Starting FastAPI backend on port $ATLAS_API_PORT..."
-export PYTHONPATH=/config
-uvicorn app:app --host 0.0.0.0 --port "$ATLAS_API_PORT" > /config/logs/uvicorn.log 2>&1 &
+export PYTHONPATH="$ATLAS_HOME:/config:${PYTHONPATH:-}"
+( cd "$ATLAS_HOME" && uvicorn app:app --host 0.0.0.0 --port "$ATLAS_API_PORT" > /config/logs/uvicorn.log 2>&1 ) &
 export API_PID=$!
 
 # Kick off scans (non-blocking)
-if [[ -x /config/bin/atlas ]]; then
+if [[ -x "$ATLAS_BIN" ]]; then
   (
     log "⚡ Running fast scan..."
-    /config/bin/atlas fastscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Fast scan complete."
+    run_atlas fastscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Fast scan complete."
 
     log "🐳 Running Docker scan..."
-    /config/bin/atlas dockerscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Docker scan complete."
+    run_atlas dockerscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Docker scan complete."
 
     log "🔍 Running deep host scan..."
-    /config/bin/atlas deepscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Deep scan complete."
+    run_atlas deepscan >> /config/logs/scan_audit.log 2>&1 && log "✅ Deep scan complete."
   ) &
 else
   log "⏭️ Skipping scans (atlas binary missing)."

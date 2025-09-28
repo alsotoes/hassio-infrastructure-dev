@@ -1,8 +1,9 @@
 ARG BUILD_FROM
 # Stage 1: Build Go binary and clone repo
-FROM golang:1.22 AS builder
+FROM golang:1.22-alpine AS builder
 
-RUN git clone https://github.com/karam-ajaj/atlas.git /atlas-repo
+RUN apk add --no-cache git build-base sqlite-dev \
+    && git clone https://github.com/karam-ajaj/atlas.git /atlas-repo
 WORKDIR /atlas-repo
 RUN git checkout 3.1.11
 
@@ -28,14 +29,19 @@ RUN source /opt/venv/bin/activate && pip install --no-cache-dir fastapi uvicorn
 # Remove default Nginx config
 RUN rm -f /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default || true
 
+ENV ATLAS_HOME=/opt/atlas
+
 # Copy from builder stage
+RUN mkdir -p ${ATLAS_HOME}
 COPY --from=builder /atlas-repo/data/html/ /usr/share/nginx/html/
-COPY --from=builder /atlas /config/bin/atlas
-COPY --from=builder /atlas-repo /
+COPY --from=builder /atlas /usr/local/bin/atlas
+COPY --from=builder /atlas-repo ${ATLAS_HOME}
 
 COPY rootfs /
 # Make all shell scripts executable
-RUN chmod +x /config/scripts/*.sh /run.sh
+RUN if [ -d /config/scripts ]; then \
+      find /config/scripts -type f -name '*.sh' -exec chmod +x {} +; \
+    fi && chmod +x /run.sh
 
 # Set default ports (can be overridden at runtime)
 ENV ATLAS_UI_PORT=8888
