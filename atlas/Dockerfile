@@ -4,7 +4,8 @@ FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 RUN apk add --no-cache git build-base sqlite-dev \
-    && git clone https://github.com/karam-ajaj/atlas.git /app
+    && git clone https://github.com/karam-ajaj/atlas.git /app \
+    && sed -i 's/conf.d/http.d/1' /app/config/scripts/atlas_check.sh
 
 WORKDIR /app/config/atlas_go
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
@@ -25,7 +26,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN source /opt/venv/bin/activate \ 
     && pip install --no-cache-dir fastapi uvicorn \
     && rm -f /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default || true \
-    && mkdir -p /etc/nginx/conf.d || true
+    && mkdir -p /etc/nginx/{conf.d,http.d} || true
 
 # Copy from builder stage
 RUN mkdir -p /config
