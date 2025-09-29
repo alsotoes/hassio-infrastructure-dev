@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.13
+
+- Repo tag 3.1.11 does not have nginx template creation, using main.
+
 ## 0.0.12
 
 - Fix nginx path for configurations missing

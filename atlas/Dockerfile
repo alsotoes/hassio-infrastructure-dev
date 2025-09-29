@@ -4,8 +4,7 @@ FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 RUN apk add --no-cache git build-base sqlite-dev \
-    && git clone https://github.com/karam-ajaj/atlas.git /app \
-    && git checkout 3.1.11
+    && git clone https://github.com/karam-ajaj/atlas.git /app
 
 WORKDIR /app/config/atlas_go
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
