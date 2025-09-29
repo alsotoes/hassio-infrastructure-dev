@@ -15,9 +15,9 @@ RUN if [ ! -f go.mod ]; then go mod init atlas || true; fi \
 # Stage 2: Runtime
 FROM ${BUILD_FROM}
 
-RUN apk add --no-cache \
-    && nginx iputils-ping traceroute nmap sqlite net-tools curl \
-    && jq ca-certificates git py3-pip gettext \
+RUN apk add --no-cache nginx iputils-ping traceroute \
+    && nmap sqlite net-tools curl jq ca-certificates \
+    && py3-pip gettext \
     && python3 -m venv /opt/venv
 
 # Install python packages
