@@ -1,5 +1,9 @@
 # Changelog
 
+##  0.0.14
+
+- Adding missing gettext package
+
 ## 0.0.13
 
 - Repo tag 3.1.11 does not have nginx template creation, using main.
