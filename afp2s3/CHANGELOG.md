@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8
+
+- Using github repo and patch for arm64
+
 ## 0.1.7
 
 - Refactor Dockerfile to fix build issues on arm64.
