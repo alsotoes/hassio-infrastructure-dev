@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Read options via bashio
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
 if ! bashio::config.has_value 'afp_server'; then
   bashio::log.fatal "Missing required option: afp_server"
   exit 1

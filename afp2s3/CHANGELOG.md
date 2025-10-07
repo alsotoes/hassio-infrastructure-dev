@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.12
+
+- Elevate container privileges to resolve FUSE access issues: set `privileged: true`, keep `/dev/fuse` device, and add `full_access: true`.
+- Update README with guidance on disabling Protection mode and FUSE requirements.
+- Ensure PATH includes `/usr/local/bin` in init script for reliable AFP tooling discovery.
+
 ## 0.1.11
 
 - Improve AFP mounting robustness by trying `mount_afp` → `afpfs-ng` → `afp_client` in order, with fallbacks on failure to avoid hard-failing on strict `/dev/fuse` checks by `afp_client`.
