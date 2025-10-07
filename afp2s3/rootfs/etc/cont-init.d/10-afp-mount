@@ -35,6 +35,28 @@ fi
 MOUNT_POINT="/mnt/afp"
 mkdir -p "${MOUNT_POINT}"
 
+# Ensure /dev/fuse device is present and accessible
+if [ ! -e /dev/fuse ]; then
+  bashio::log.fatal "Missing /dev/fuse device. Expose it in add-on config (devices: - /dev/fuse)."
+  exit 1
+fi
+
+# Report current /dev/fuse ownership and permissions
+DEV_PERM=$(stat -c "%a" /dev/fuse 2>/dev/null || true)
+DEV_UID=$(stat -c "%u" /dev/fuse 2>/dev/null || true)
+DEV_GID=$(stat -c "%g" /dev/fuse 2>/dev/null || true)
+bashio::log.info "Detected /dev/fuse mode=${DEV_PERM:-unknown} uid=${DEV_UID:-unknown} gid=${DEV_GID:-unknown}"
+
+# Relax permissions to allow FUSE mounts, warn if not 0666
+if [ "${DEV_PERM}" != "666" ]; then
+  bashio::log.warning "Adjusting /dev/fuse permissions to 0666 (was ${DEV_PERM})."
+  if ! chmod 666 /dev/fuse 2>/dev/null; then
+    bashio::log.warning "Failed to change /dev/fuse permissions. Mounts may fail."
+  fi
+  DEV_PERM=$(stat -c "%a" /dev/fuse 2>/dev/null || true)
+  bashio::log.info "Post-adjust /dev/fuse mode=${DEV_PERM:-unknown}"
+fi
+
 mount_afp_share() {
   local server="$1"
   local mount_point="$2"

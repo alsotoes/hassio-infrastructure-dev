@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.10
+
+- Add-on startup hardening for FUSE:
+  - Require `/dev/fuse` via `devices` and grant `SYS_ADMIN` in `privileged`.
+  - Enable s6 init with `init: true` in `config.yaml`.
+  - Init script logs /dev/fuse mode/uid/gid, attempts to set mode to 0666, and warns on failure.
+- Documentation: installation note for FUSE device/capability.
+
 ## 0.1.9
 
 - Switch to s6 supervision: add `cont-init.d/10-afp-mount` and `services.d/minio/run`.

@@ -10,6 +10,7 @@ This add-on mounts a remote AFP (Apple Filing Protocol) share into the add-on's 
 2.  In Home Assistant, navigate to the **Add-on Store** in the **Supervisor** panel.
 3.  Click the three dots in the top right corner and select **"Reload"**.
 4.  The "AFP to S3" add-on will appear as a local add-on. Click on it and then click **"Install"**.
+5.  Grant FUSE access and privilege: in the add-on configuration, ensure `devices` includes `/dev/fuse` and `privileged` includes `SYS_ADMIN`. AppArmor is disabled by default for compatibility.
 
 ## Configuration
 
