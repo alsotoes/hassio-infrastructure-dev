@@ -1,3 +1,4 @@
+ARG BUILD_FROM
 FROM arm64v8/ubuntu:jammy as buildlayer
 
 RUN apt update -y && \
@@ -10,7 +11,6 @@ RUN apt update -y && \
     patch -p0 < afpfs-ng_headup-patch00.diff && cd afpfs-ng && \
     CFLAGS="-I/usr/local/include -L/usr/local/lib" ./configure --build=arm-unknown-linux-gnu && make && make install
 
-ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 RUN apk add --no-cache \
