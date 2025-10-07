@@ -1,6 +1,6 @@
 ---
 name: AFP to S3
-version: "0.1.12"
+version: "0.1.13"
 slug: afp2s3
 description: Mounts an AFP share and exposes it as an S3 endpoint using Minio.
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/afp2s3
@@ -8,15 +8,14 @@ apparmor: false
 ingress: true
 ingress_port: 9001
 arch:
-  - amd64
-  - armv7
   - aarch64
 init: true
 map:
   - ssl
 devices:
   - /dev/fuse
-privileged: true
+privileged:
+  - SYS_ADMIN
 full_access: true
 options:
   afp_server: "192.168.2.100"

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13
+
+- Limit supported architectures to `aarch64` only and update build matrix accordingly.
+
 ## 0.1.12
 
 - Elevate container privileges to resolve FUSE access issues: set `privileged: true`, keep `/dev/fuse` device, and add `full_access: true`.
