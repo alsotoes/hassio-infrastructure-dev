@@ -17,29 +17,40 @@ After installation, you need to configure the add-on. You can do this from the a
 
 The following configuration options are available:
 
-| Option          | Description                               |
-| --------------- | ----------------------------------------- |
-| `afp_server`    | The URL of the AFP server and share.      |
-| `afp_user`      | The username for the AFP share.           |
-| `afp_password`  | The password for the AFP share.           |
-| `s3_access_key` | The access key for the S3 server (Minio). |
-| `s3_secret_key` | The secret key for the S3 server (Minio). |
+| Option         | Description                          |
+| -------------- | ------------------------------------ |
+| `afp_server`   | The URL or host of the AFP server.    |
+| `afp_user`     | The username for the AFP share.      |
+| `afp_password` | The password for the AFP share.      |
+| `afp_share`    | The AFP share name (optional).        |
+| `afp_marker`   | File to require on the mount to validate (optional, defaults to `.com.apple.timemachine.supported`). Set to empty string to disable.
 
 ### Example Configuration
 
 ```yaml
+# Either include the share in the URL:
 afp_server: "afp://192.168.1.100/my_share"
+
+# Or specify server and share separately:
+# afp_server: "afp://192.168.1.100"
+# afp_share: "my_share"
+
 afp_user: "my_user"
 afp_password: "my_password"
-s3_access_key: "my_access_key"
-s3_secret_key: "my_secret_key"
+
+# Optional marker file to validate the mount. Set to "" to disable.
+afp_marker: ".com.apple.timemachine.supported"
 ```
+
+Note: If `afp_server` already includes a share path (e.g., `afp://host/share`) and `afp_share` is also set, the add-on logs a warning and ignores `afp_share` to avoid double-appending the path.
 
 ## Usage
 
-Once the add-on is started, you can access the S3 server on port `9000`. The Minio web interface is available on port `9001`.
+Once the add-on is started, you can access the S3 server on port `9000`. The MinIO web interface is available on port `9001`.
 
-You can access the Minio web interface through the Home Assistant ingress by clicking the "Open Web UI" button on the add-on's page.
+You can access the MinIO web interface through the Home Assistant ingress by clicking the "Open Web UI" button on the add-on's page.
+
+Default MinIO credentials are `minioadmin:minioadmin`.
 
 ## Security
 

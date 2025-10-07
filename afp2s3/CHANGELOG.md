@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.9
+
+- Switch to s6 supervision: add `cont-init.d/10-afp-mount` and `services.d/minio/run`.
+- Read configuration via bashio; remove legacy `run.sh` entrypoint.
+- Remove references to `s3_access_key` and `s3_secret_key` from docs.
+- Add `afp_share` optional config; compose final AFP URL from server + share.
+- Add `afp_marker` optional config; allow disabling marker check with empty string.
+- Warn if `afp_server` already includes a share/path and `afp_share` is also set.
+- Update Dockerfile to start with `/init` and ensure scripts are executable.
+
 ## 0.1.8
 
 - Using github repo and patch for arm64

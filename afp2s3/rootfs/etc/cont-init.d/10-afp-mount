@@ -1,0 +1,130 @@
+#!/usr/bin/with-contenv bashio
+set -euo pipefail
+
+# Read options via bashio
+if ! bashio::config.has_value 'afp_server'; then
+  bashio::log.fatal "Missing required option: afp_server"
+  exit 1
+fi
+if ! bashio::config.has_value 'afp_user'; then
+  bashio::log.fatal "Missing required option: afp_user"
+  exit 1
+fi
+if ! bashio::config.has_value 'afp_password'; then
+  bashio::log.fatal "Missing required option: afp_password"
+  exit 1
+fi
+
+AFP_SERVER=$(bashio::config 'afp_server')
+AFP_USER=$(bashio::config 'afp_user')
+AFP_PASSWORD=$(bashio::config 'afp_password')
+
+# Optional share and marker
+AFP_SHARE=""
+if bashio::config.has_value 'afp_share'; then
+  AFP_SHARE=$(bashio::config 'afp_share')
+fi
+
+AFP_MARKER=""
+if bashio::config.has_value 'afp_marker'; then
+  AFP_MARKER=$(bashio::config 'afp_marker')
+else
+  AFP_MARKER=".com.apple.timemachine.supported"
+fi
+
+MOUNT_POINT="/mnt/afp"
+mkdir -p "${MOUNT_POINT}"
+
+mount_afp_share() {
+  local server="$1"
+  local mount_point="$2"
+  local user="$3"
+  local password="$4"
+
+  if command -v afp_client >/dev/null 2>&1; then
+    bashio::log.info "Mounting AFP share using afp_client"
+    afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}"
+    return $?
+  fi
+
+  local server_without_scheme="${server#afp://}"
+  local server_path
+  if [ "${server_without_scheme}" = "${server}" ]; then
+    server_path="${server}"
+  else
+    server_path="${server_without_scheme}"
+  fi
+  local url_with_credentials="afp://${user}:${password}@${server_path}"
+
+  if command -v mount_afp >/dev/null 2>&1; then
+    bashio::log.info "Mounting AFP share using mount_afp"
+    mount_afp "${url_with_credentials}" "${mount_point}"
+    return $?
+  fi
+
+  if command -v afpfs-ng >/dev/null 2>&1; then
+    bashio::log.info "Mounting AFP share using afpfs-ng"
+    afpfs-ng mount "${url_with_credentials}" "${mount_point}"
+    return $?
+  fi
+
+  bashio::log.error "No AFP mounting utility (afp_client, mount_afp, afpfs-ng) is available."
+  return 1
+}
+
+# Build final server path, optionally appending share
+SERVER_BASE="${AFP_SERVER#afp://}"
+
+# Detect if AFP_SERVER already contains a share/path
+SERVER_HAS_PATH=false
+if [[ "${SERVER_BASE}" == */* ]]; then
+  SERVER_HAS_PATH=true
+fi
+
+# If both server has path and afp_share is set, warn and ignore afp_share
+if $SERVER_HAS_PATH && [ -n "${AFP_SHARE}" ]; then
+  bashio::log.warning "Both 'afp_server' includes a share/path and 'afp_share' is set. Ignoring 'afp_share' to avoid double-appending."
+  AFP_SHARE=""
+fi
+
+if [ -n "${AFP_SHARE}" ]; then
+  SERVER_PATH="${SERVER_BASE%/}/${AFP_SHARE}"
+else
+  SERVER_PATH="${SERVER_BASE}"
+fi
+AFP_URL="afp://${SERVER_PATH}"
+
+if ! mount_afp_share "${AFP_URL}" "${MOUNT_POINT}" "${AFP_USER}" "${AFP_PASSWORD}"; then
+  bashio::log.fatal "Failed to mount AFP share"
+  exit 1
+fi
+
+if ! mountpoint -q "${MOUNT_POINT}"; then
+  bashio::log.fatal "AFP mount validation failed"
+  exit 1
+fi
+
+# Enforce marker if configured (non-empty)
+if [ -n "${AFP_MARKER}" ]; then
+  if [ ! -f "${MOUNT_POINT}/${AFP_MARKER}" ]; then
+    bashio::log.fatal "AFP mount validation failed: marker '${AFP_MARKER}' not found"
+    exit 1
+  fi
+fi
+
+# Ensure MinIO binary exists (download if missing)
+if [ ! -x /usr/local/bin/minio ]; then
+  ARCH=$(uname -m)
+  case "${ARCH}" in
+    x86_64) MINIO_ARCH="amd64" ;;
+    armv7l) MINIO_ARCH="arm" ;;
+    aarch64) MINIO_ARCH="arm64" ;;
+    *) bashio::log.fatal "Unsupported architecture: ${ARCH}"; exit 1 ;;
+  esac
+  MINIO_URL="https://dl.min.io/server/minio/release/linux-${MINIO_ARCH}/minio"
+  bashio::log.info "Downloading MinIO for ${MINIO_ARCH}"
+  wget -q "${MINIO_URL}" -O /usr/local/bin/minio
+  chmod +x /usr/local/bin/minio
+fi
+
+bashio::log.info "Initialization complete: AFP mounted and MinIO prepared"

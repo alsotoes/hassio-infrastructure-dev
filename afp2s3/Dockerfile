@@ -35,6 +35,6 @@ COPY --from=buildlayer /usr/local/lib/libafpclient.so.0.0.0 /usr/local/lib/libaf
 
 # Copy data for add-on
 COPY rootfs /
-RUN chmod a+x /run.sh
+RUN chmod a+x /etc/cont-init.d/10-afp-mount /etc/services.d/minio/run
 
-CMD [ "/run.sh" ]
+CMD [ "/init" ]
