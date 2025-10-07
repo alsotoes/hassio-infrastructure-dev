@@ -19,14 +19,14 @@ devices:
 privileged: true
 full_access: true
 options:
-  afp_server: "afp://server/share"
+  afp_server: "192.168.2.100"
   afp_user: "user"
   afp_password: "password"
-  afp_share: ""
+  afp_share: "Data"
   afp_marker: ".com.apple.timemachine.supported"
 schema:
-  afp_server: str
-  afp_user: str
+  afp_server: str?
+  afp_user: str?
   afp_password: password
   afp_share: str?
   afp_marker: str?
