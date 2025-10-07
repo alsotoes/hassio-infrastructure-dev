@@ -63,12 +63,6 @@ mount_afp_share() {
   local user="$3"
   local password="$4"
 
-  if command -v afp_client >/dev/null 2>&1; then
-    bashio::log.info "Mounting AFP share using afp_client"
-    afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}"
-    return $?
-  fi
-
   local server_without_scheme="${server#afp://}"
   local server_path
   if [ "${server_without_scheme}" = "${server}" ]; then
@@ -78,19 +72,41 @@ mount_afp_share() {
   fi
   local url_with_credentials="afp://${user}:${password}@${server_path}"
 
+  # Prefer mount_afp -> afpfs-ng -> afp_client; attempt fallbacks on failure
+  local tried=0
   if command -v mount_afp >/dev/null 2>&1; then
+    tried=1
     bashio::log.info "Mounting AFP share using mount_afp"
-    mount_afp "${url_with_credentials}" "${mount_point}"
-    return $?
+    if mount_afp "${url_with_credentials}" "${mount_point}"; then
+      return 0
+    else
+      bashio::log.warning "mount_afp failed; will try another method"
+    fi
   fi
 
   if command -v afpfs-ng >/dev/null 2>&1; then
+    tried=1
     bashio::log.info "Mounting AFP share using afpfs-ng"
-    afpfs-ng mount "${url_with_credentials}" "${mount_point}"
-    return $?
+    if afpfs-ng mount "${url_with_credentials}" "${mount_point}"; then
+      return 0
+    else
+      bashio::log.warning "afpfs-ng mount failed; will try another method"
+    fi
   fi
 
-  bashio::log.error "No AFP mounting utility (afp_client, mount_afp, afpfs-ng) is available."
+  if command -v afp_client >/dev/null 2>&1; then
+    tried=1
+    bashio::log.info "Mounting AFP share using afp_client"
+    if afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}"; then
+      return 0
+    else
+      bashio::log.warning "afp_client mount failed"
+    fi
+  fi
+
+  if [ "$tried" -eq 0 ]; then
+    bashio::log.error "No AFP mounting utility found (looked for mount_afp, afpfs-ng, afp_client)."
+  fi
   return 1
 }
 
