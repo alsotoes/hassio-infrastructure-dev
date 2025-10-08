@@ -1,7 +1,9 @@
 # Changelog
 
-## 0.1.15
+## 0.1.16
 
+- Add `allow_afp_client_fallback` add-on option (default: false) to explicitly enable the legacy fallback.
+- Bump version to ensure rebuild and adoption of new logging and option.
 - Add extensive debug logging: sanitized URLs, command discovery, fuse diagnostics, and captured stderr from mount operations.
 - Trap unexpected errors and report source line numbers (without echoing commands or secrets).
 

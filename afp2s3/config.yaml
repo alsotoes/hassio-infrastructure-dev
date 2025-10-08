@@ -1,6 +1,6 @@
 ---
 name: AFP to S3
-version: "0.1.15"
+version: "0.1.16"
 slug: afp2s3
 description: Mounts an AFP share and exposes it as an S3 endpoint using Minio.
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/afp2s3
@@ -23,12 +23,14 @@ options:
   afp_password: "password"
   afp_share: "Data"
   afp_marker: ".com.apple.timemachine.supported"
+  allow_afp_client_fallback: false
 schema:
   afp_server: str?
   afp_user: str?
   afp_password: password
   afp_share: str?
   afp_marker: str?
+  allow_afp_client_fallback: bool?
 webui: "http://[HOST]:[PORT:9001]/"
 ports:
   9000/tcp: 9000

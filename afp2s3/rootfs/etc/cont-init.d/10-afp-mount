@@ -70,6 +70,14 @@ else
   AFP_MARKER=".com.apple.timemachine.supported"
 fi
 
+# Optional: allow using afp_client fallback (default false)
+ALLOW_AFP_CLIENT_FALLBACK=false
+if bashio::config.has_value 'allow_afp_client_fallback'; then
+  if [ "$(bashio::config 'allow_afp_client_fallback')" = "true" ]; then
+    ALLOW_AFP_CLIENT_FALLBACK=true
+  fi
+fi
+
 MOUNT_POINT="/mnt/afp"
 mkdir -p "${MOUNT_POINT}"
 
@@ -135,7 +143,7 @@ mount_afp_share() {
 
   # Last-resort fallback: try afp_client only if explicitly requested
   # Set ALLOW_AFP_CLIENT_FALLBACK=true in the environment to enable
-  if [ "${ALLOW_AFP_CLIENT_FALLBACK:-false}" = "true" ]; then
+  if [ "${ALLOW_AFP_CLIENT_FALLBACK}" = "true" ]; then
     log_cmd_path afp_client
     if command -v afp_client >/dev/null 2>&1; then
       bashio::log.warning "Falling back to afp_client. Beware: it enforces strict /dev/fuse checks."
