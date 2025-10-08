@@ -4,6 +4,8 @@ set -euo pipefail
 # Trap unexpected errors to pinpoint failure location (no command echo to avoid secrets)
 trap 'bashio::log.error "Unhandled error at ${BASH_SOURCE[0]}:${LINENO}"' ERR
 
+bashio::log.info "afp2s3 init: debug build 0.1.15"
+
 # Helpers
 mask_url() {
   local url="$1"
