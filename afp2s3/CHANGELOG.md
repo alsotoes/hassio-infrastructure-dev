@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.14
+
+- Fix AFP fallback logic: remove invalid `afpfs-ng` binary check and prefer `mount_afp` by default.
+- Gate `afp_client` fallback behind `ALLOW_AFP_CLIENT_FALLBACK=true` due to strict `/dev/fuse` checks.
+- Add best-effort `chgrp fuse /dev/fuse` and clearer fuse permission diagnostics in init script.
+
 ## 0.1.13
 
 - Limit supported architectures to `aarch64` only and update build matrix accordingly.

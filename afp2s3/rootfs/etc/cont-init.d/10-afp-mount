@@ -48,6 +48,13 @@ DEV_UID=$(stat -c "%u" /dev/fuse 2>/dev/null || true)
 DEV_GID=$(stat -c "%g" /dev/fuse 2>/dev/null || true)
 bashio::log.info "Detected /dev/fuse mode=${DEV_PERM:-unknown} uid=${DEV_UID:-unknown} gid=${DEV_GID:-unknown}"
 
+# If a 'fuse' group exists, try to set group on the device (best-effort)
+if grep -qE '^fuse:' /etc/group 2>/dev/null; then
+  if ! chgrp fuse /dev/fuse 2>/dev/null; then
+    bashio::log.debug "Could not chgrp fuse /dev/fuse (continuing)"
+  fi
+fi
+
 # Relax permissions to allow FUSE mounts, warn if not 0666
 if [ "${DEV_PERM}" != "666" ]; then
   bashio::log.warning "Adjusting /dev/fuse permissions to 0666 (was ${DEV_PERM})."
@@ -73,41 +80,28 @@ mount_afp_share() {
   fi
   local url_with_credentials="afp://${user}:${password}@${server_path}"
 
-  # Prefer mount_afp -> afpfs-ng -> afp_client; attempt fallbacks on failure
-  local tried=0
+  # Strongly prefer mount_afp to avoid strict fuse checks in afp_client
   if command -v mount_afp >/dev/null 2>&1; then
-    tried=1
     bashio::log.info "Mounting AFP share using mount_afp"
     if mount_afp "${url_with_credentials}" "${mount_point}"; then
       return 0
-    else
-      bashio::log.warning "mount_afp failed; will try another method"
     fi
+    bashio::log.warning "mount_afp failed (see previous errors)."
+  else
+    bashio::log.error "mount_afp not found in PATH; cannot mount AFP."
   fi
 
-  if command -v afpfs-ng >/dev/null 2>&1; then
-    tried=1
-    bashio::log.info "Mounting AFP share using afpfs-ng"
-    if afpfs-ng mount "${url_with_credentials}" "${mount_point}"; then
-      return 0
-    else
-      bashio::log.warning "afpfs-ng mount failed; will try another method"
-    fi
-  fi
-
-  if command -v afp_client >/dev/null 2>&1; then
-    tried=1
-    bashio::log.info "Mounting AFP share using afp_client"
+  # Last-resort fallback: try afp_client only if explicitly requested
+  # Set ALLOW_AFP_CLIENT_FALLBACK=true in the environment to enable
+  if [ "${ALLOW_AFP_CLIENT_FALLBACK:-false}" = "true" ] && command -v afp_client >/dev/null 2>&1; then
+    bashio::log.warning "Falling back to afp_client. Beware: it enforces strict /dev/fuse checks."
     if afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}"; then
       return 0
-    else
-      bashio::log.warning "afp_client mount failed"
     fi
+    bashio::log.warning "afp_client mount failed"
   fi
 
-  if [ "$tried" -eq 0 ]; then
-    bashio::log.error "No AFP mounting utility found (looked for mount_afp, afpfs-ng, afp_client)."
-  fi
+  bashio::log.error "AFP mount failed. Ensure /dev/fuse is exposed with mode 0666 and that Protection mode is disabled."
   return 1
 }
 
