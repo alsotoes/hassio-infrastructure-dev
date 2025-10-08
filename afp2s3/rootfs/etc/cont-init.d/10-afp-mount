@@ -1,6 +1,38 @@
 #!/usr/bin/with-contenv bashio
 set -euo pipefail
 
+# Trap unexpected errors to pinpoint failure location (no command echo to avoid secrets)
+trap 'bashio::log.error "Unhandled error at ${BASH_SOURCE[0]}:${LINENO}"' ERR
+
+# Helpers
+mask_url() {
+  local url="$1"
+  if [[ "$url" =~ ^afp://([^@]+)@(.+)$ ]]; then
+    local creds="${BASH_REMATCH[1]}"
+    local tail="${BASH_REMATCH[2]}"
+    if [[ "$creds" == *:* ]]; then
+      local user="${creds%%:*}"
+      echo "afp://${user}:****@${tail}"
+    else
+      echo "afp://****@${tail}"
+    fi
+  else
+    echo "$url"
+  fi
+}
+
+log_cmd_path() {
+  local bin="$1"
+  if command -v "$bin" >/dev/null 2>&1; then
+    local p
+    p=$(command -v "$bin")
+    bashio::log.info "Found $bin at: $p"
+    ls -l "$p" 2>/dev/null || true
+  else
+    bashio::log.info "$bin not found in PATH"
+  fi
+}
+
 # Read options via bashio
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
 if ! bashio::config.has_value 'afp_server'; then
@@ -19,6 +51,9 @@ fi
 AFP_SERVER=$(bashio::config 'afp_server')
 AFP_USER=$(bashio::config 'afp_user')
 AFP_PASSWORD=$(bashio::config 'afp_password')
+
+bashio::log.info "Runtime: id=$(id -u) gid=$(id -g) groups=$(id -Gn)"
+bashio::log.info "Runtime: PATH=${PATH}"
 
 # Optional share and marker
 AFP_SHARE=""
@@ -47,6 +82,7 @@ DEV_PERM=$(stat -c "%a" /dev/fuse 2>/dev/null || true)
 DEV_UID=$(stat -c "%u" /dev/fuse 2>/dev/null || true)
 DEV_GID=$(stat -c "%g" /dev/fuse 2>/dev/null || true)
 bashio::log.info "Detected /dev/fuse mode=${DEV_PERM:-unknown} uid=${DEV_UID:-unknown} gid=${DEV_GID:-unknown}"
+ls -l /dev/fuse 2>/dev/null || true
 
 # If a 'fuse' group exists, try to set group on the device (best-effort)
 if grep -qE '^fuse:' /etc/group 2>/dev/null; then
@@ -81,24 +117,34 @@ mount_afp_share() {
   local url_with_credentials="afp://${user}:${password}@${server_path}"
 
   # Strongly prefer mount_afp to avoid strict fuse checks in afp_client
-  if command -v mount_afp >/dev/null 2>&1; then
-    bashio::log.info "Mounting AFP share using mount_afp"
-    if mount_afp "${url_with_credentials}" "${mount_point}"; then
-      return 0
-    fi
-    bashio::log.warning "mount_afp failed (see previous errors)."
+  log_cmd_path mount_afp
+  bashio::log.info "Mounting AFP share using mount_afp"
+  local masked
+  masked=$(mask_url "${url_with_credentials}")
+  bashio::log.info "mount_afp URL: ${masked} -> ${mount_point}"
+  if output=$(mount_afp "${url_with_credentials}" "${mount_point}" 2>&1); then
+    bashio::log.info "mount_afp succeeded"
+    return 0
   else
-    bashio::log.error "mount_afp not found in PATH; cannot mount AFP."
+    local code=$?
+    bashio::log.error "mount_afp failed (exit=${code}): ${output}"
+    bashio::log.info "Fuse device after failure:"; ls -l /dev/fuse || true
   fi
 
   # Last-resort fallback: try afp_client only if explicitly requested
   # Set ALLOW_AFP_CLIENT_FALLBACK=true in the environment to enable
-  if [ "${ALLOW_AFP_CLIENT_FALLBACK:-false}" = "true" ] && command -v afp_client >/dev/null 2>&1; then
-    bashio::log.warning "Falling back to afp_client. Beware: it enforces strict /dev/fuse checks."
-    if afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}"; then
-      return 0
+  if [ "${ALLOW_AFP_CLIENT_FALLBACK:-false}" = "true" ]; then
+    log_cmd_path afp_client
+    if command -v afp_client >/dev/null 2>&1; then
+      bashio::log.warning "Falling back to afp_client. Beware: it enforces strict /dev/fuse checks."
+      if output=$(afp_client mount -u "${user}" -p "${password}" "${server}" "${mount_point}" 2>&1); then
+        bashio::log.info "afp_client succeeded"
+        return 0
+      else
+        local code=$?
+        bashio::log.error "afp_client failed (exit=${code}): ${output}"
+      fi
     fi
-    bashio::log.warning "afp_client mount failed"
   fi
 
   bashio::log.error "AFP mount failed. Ensure /dev/fuse is exposed with mode 0666 and that Protection mode is disabled."
@@ -126,6 +172,7 @@ else
   SERVER_PATH="${SERVER_BASE}"
 fi
 AFP_URL="afp://${SERVER_PATH}"
+bashio::log.info "Composed AFP URL: $(mask_url "afp://${AFP_USER}:****@${SERVER_PATH}")"
 
 if ! mount_afp_share "${AFP_URL}" "${MOUNT_POINT}" "${AFP_USER}" "${AFP_PASSWORD}"; then
   bashio::log.fatal "Failed to mount AFP share"
@@ -136,11 +183,16 @@ if ! mountpoint -q "${MOUNT_POINT}"; then
   bashio::log.fatal "AFP mount validation failed"
   exit 1
 fi
+bashio::log.info "Mount details:"
+mount | grep -E "${MOUNT_POINT}($| )" || true
+df -h "${MOUNT_POINT}" || true
 
 # Enforce marker if configured (non-empty)
 if [ -n "${AFP_MARKER}" ]; then
   if [ ! -f "${MOUNT_POINT}/${AFP_MARKER}" ]; then
-    bashio::log.fatal "AFP mount validation failed: marker '${AFP_MARKER}' not found"
+    bashio::log.error "AFP mount validation failed: marker '${AFP_MARKER}' not found"
+    bashio::log.info "Listing of mount root to aid debugging:"
+    ls -la "${MOUNT_POINT}" || true
     exit 1
   fi
 fi
@@ -159,5 +211,6 @@ if [ ! -x /usr/local/bin/minio ]; then
   wget -q "${MINIO_URL}" -O /usr/local/bin/minio
   chmod +x /usr/local/bin/minio
 fi
+log_cmd_path minio
 
 bashio::log.info "Initialization complete: AFP mounted and MinIO prepared"

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.15
+
+- Add extensive debug logging: sanitized URLs, command discovery, fuse diagnostics, and captured stderr from mount operations.
+- Trap unexpected errors and report source line numbers (without echoing commands or secrets).
+
 ## 0.1.14
 
 - Fix AFP fallback logic: remove invalid `afpfs-ng` binary check and prefer `mount_afp` by default.
