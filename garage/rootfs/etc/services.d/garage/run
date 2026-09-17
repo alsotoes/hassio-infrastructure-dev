@@ -1,0 +1,15 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+# Source environment variables
+# shellcheck source=/dev/null
+source /etc/services.d/garage/run.env
+
+# Build command
+CMD="/usr/local/bin/garage server --config ${GARAGE_CONFIG}"
+
+if [ "${GARAGE_MODE}" = "single-node" ]; then
+    CMD="${CMD} --single-node --default-bucket"
+fi
+
+exec ${CMD}

@@ -1,0 +1,225 @@
+#!/command/with-contenv bashio
+# ==============================================================================
+# Garage S3 Storage - Configuration and Secret Management
+# ==============================================================================
+set -euo pipefail
+
+# Trap unexpected errors to pinpoint failure location
+trap 'bashio::log.error "Unhandled error at ${BASH_SOURCE[0]}:${LINENO}"' ERR
+
+bashio::log.info "Garage init: Starting configuration..."
+
+# ------------------------------------------------------------------------------
+# Read configuration options
+# ------------------------------------------------------------------------------
+MODE=$(bashio::config 'mode')
+RPC_BIND_ADDR=$(bashio::config 'rpc_bind_addr')
+RPC_PUBLIC_ADDR=$(bashio::config 'rpc_public_addr')
+S3_API_BIND_ADDR=$(bashio::config 's3_api_bind_addr')
+S3_WEB_BIND_ADDR=$(bashio::config 's3_web_bind_addr')
+ADMIN_BIND_ADDR=$(bashio::config 'admin_bind_addr')
+S3_REGION=$(bashio::config 's3_region')
+S3_ROOT_DOMAIN=$(bashio::config 's3_root_domain')
+S3_WEB_ROOT_DOMAIN=$(bashio::config 's3_web_root_domain')
+S3_WEB_INDEX=$(bashio::config 's3_web_index')
+METADATA_DIR=$(bashio::config 'metadata_dir')
+DATA_DIR=$(bashio::config 'data_dir')
+DB_ENGINE=$(bashio::config 'db_engine')
+REPLICATION_FACTOR=$(bashio::config 'replication_factor')
+RPC_SECRET_CONFIG=$(bashio::config 'rpc_secret')
+ADMIN_TOKEN_CONFIG=$(bashio::config 'admin_token')
+METRICS_TOKEN_CONFIG=$(bashio::config 'metrics_token')
+LOG_LEVEL=$(bashio::config 'log_level')
+COMPRESSION_LEVEL=$(bashio::config 'compression_level')
+BLOCK_SIZE=$(bashio::config 'block_size')
+
+# Read bootstrap peers as array
+BOOTSTRAP_PEERS=()
+if bashio::config.has_value 'bootstrap_peers'; then
+    while IFS= read -r peer; do
+        [ -n "$peer" ] && BOOTSTRAP_PEERS+=("$peer")
+    done < <(bashio::config 'bootstrap_peers' | jq -r '.[]')
+fi
+
+# ------------------------------------------------------------------------------
+# Create data directories
+# ------------------------------------------------------------------------------
+bashio::log.info "Creating data directories: ${METADATA_DIR}, ${DATA_DIR}"
+mkdir -p "${METADATA_DIR}" "${DATA_DIR}"
+
+# ------------------------------------------------------------------------------
+# Secret management
+# ------------------------------------------------------------------------------
+SECRETS_FILE="/data/garage-secrets.env"
+
+# Load existing secrets if present
+RPC_SECRET=""
+ADMIN_TOKEN=""
+METRICS_TOKEN=""
+DEFAULT_ACCESS_KEY=""
+DEFAULT_SECRET_KEY=""
+DEFAULT_BUCKET=""
+
+if [ -f "${SECRETS_FILE}" ]; then
+    bashio::log.info "Loading existing secrets from ${SECRETS_FILE}"
+    # shellcheck source=/dev/null
+    source "${SECRETS_FILE}"
+fi
+
+# Generate missing secrets
+if [ -z "${RPC_SECRET}" ]; then
+    RPC_SECRET=$(openssl rand -hex 32)
+    bashio::log.info "Generated new RPC secret"
+fi
+
+if [ -z "${ADMIN_TOKEN}" ]; then
+    ADMIN_TOKEN=$(openssl rand -base64 32)
+    bashio::log.info "Generated new admin token"
+fi
+
+if [ -z "${METRICS_TOKEN}" ]; then
+    METRICS_TOKEN=$(openssl rand -base64 32)
+    bashio::log.info "Generated new metrics token"
+fi
+
+# Generate default bucket credentials for single-node mode
+if [ "${MODE}" = "single-node" ]; then
+    if [ -z "${DEFAULT_ACCESS_KEY}" ]; then
+        DEFAULT_ACCESS_KEY=$(openssl rand -hex 16)
+        bashio::log.info "Generated default access key"
+    fi
+    if [ -z "${DEFAULT_SECRET_KEY}" ]; then
+        DEFAULT_SECRET_KEY=$(openssl rand -hex 32)
+        bashio::log.info "Generated default secret key"
+    fi
+    if [ -z "${DEFAULT_BUCKET}" ]; then
+        DEFAULT_BUCKET="homeassistant"
+        bashio::log.info "Using default bucket name: ${DEFAULT_BUCKET}"
+    fi
+fi
+
+# Config values override generated secrets (if non-empty)
+if [ -n "${RPC_SECRET_CONFIG}" ]; then
+    RPC_SECRET="${RPC_SECRET_CONFIG}"
+    bashio::log.info "Using RPC secret from config"
+fi
+
+if [ -n "${ADMIN_TOKEN_CONFIG}" ]; then
+    ADMIN_TOKEN="${ADMIN_TOKEN_CONFIG}"
+    bashio::log.info "Using admin token from config"
+fi
+
+if [ -n "${METRICS_TOKEN_CONFIG}" ]; then
+    METRICS_TOKEN="${METRICS_TOKEN_CONFIG}"
+    bashio::log.info "Using metrics token from config"
+fi
+
+# Save secrets back to file (secure permissions)
+{
+    echo "RPC_SECRET=${RPC_SECRET}"
+    echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+    echo "METRICS_TOKEN=${METRICS_TOKEN}"
+    echo "DEFAULT_ACCESS_KEY=${DEFAULT_ACCESS_KEY}"
+    echo "DEFAULT_SECRET_KEY=${DEFAULT_SECRET_KEY}"
+    echo "DEFAULT_BUCKET=${DEFAULT_BUCKET}"
+} > "${SECRETS_FILE}"
+chmod 600 "${SECRETS_FILE}"
+bashio::log.info "Secrets saved to ${SECRETS_FILE}"
+
+# ------------------------------------------------------------------------------
+# Auto-detect RPC public address if not provided
+# ------------------------------------------------------------------------------
+if [ -z "${RPC_PUBLIC_ADDR}" ] && [ "${MODE}" = "cluster" ]; then
+    # Try to detect public IP
+    DETECTED_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}' || true)
+    if [ -n "${DETECTED_IP}" ]; then
+        RPC_PUBLIC_ADDR="${DETECTED_IP}:3901"
+        bashio::log.info "Auto-detected RPC public address: ${RPC_PUBLIC_ADDR}"
+    else
+        bashio::log.warning "Could not auto-detect public IP. Cluster mode requires rpc_public_addr to be set."
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# Validate cluster mode configuration
+# ------------------------------------------------------------------------------
+if [ "${MODE}" = "cluster" ]; then
+    if [ -z "${RPC_PUBLIC_ADDR}" ]; then
+        bashio::log.fatal "Cluster mode requires rpc_public_addr to be set (or auto-detectable)"
+        exit 1
+    fi
+    if [ ${#BOOTSTRAP_PEERS[@]} -eq 0 ]; then
+        bashio::log.warning "Cluster mode started without bootstrap_peers. This is the first node."
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# Generate garage.toml configuration
+# ------------------------------------------------------------------------------
+GARAGE_CONFIG="/etc/garage.toml"
+
+bashio::log.info "Generating Garage configuration: ${GARAGE_CONFIG}"
+
+cat > "${GARAGE_CONFIG}" <<EOF
+metadata_dir = "${METADATA_DIR}"
+data_dir = "${DATA_DIR}"
+db_engine = "${DB_ENGINE}"
+
+replication_factor = ${REPLICATION_FACTOR}
+
+compression_level = ${COMPRESSION_LEVEL}
+
+block_size = "${BLOCK_SIZE}"
+
+rpc_bind_addr = "${RPC_BIND_ADDR}"
+rpc_public_addr = "${RPC_PUBLIC_ADDR}"
+rpc_secret = "${RPC_SECRET}"
+
+[s3_api]
+s3_region = "${S3_REGION}"
+api_bind_addr = "${S3_API_BIND_ADDR}"
+root_domain = "${S3_ROOT_DOMAIN}"
+
+[s3_web]
+bind_addr = "${S3_WEB_BIND_ADDR}"
+root_domain = "${S3_WEB_ROOT_DOMAIN}"
+index = "${S3_WEB_INDEX}"
+
+[admin]
+api_bind_addr = "${ADMIN_BIND_ADDR}"
+admin_token = "${ADMIN_TOKEN}"
+metrics_token = "${METRICS_TOKEN}"
+metrics_require_token = true
+EOF
+
+# Add bootstrap peers if in cluster mode
+if [ "${MODE}" = "cluster" ] && [ ${#BOOTSTRAP_PEERS[@]} -gt 0 ]; then
+    {
+        echo ""
+        echo "bootstrap_peers = ["
+        for peer in "${BOOTSTRAP_PEERS[@]}"; do
+            echo "    \"${peer}\","
+        done
+        echo "]"
+    } >> "${GARAGE_CONFIG}"
+fi
+
+bashio::log.info "Garage configuration generated successfully"
+
+# ------------------------------------------------------------------------------
+# Export environment variables for the service
+# ------------------------------------------------------------------------------
+{
+    echo "GARAGE_CONFIG=${GARAGE_CONFIG}"
+    echo "GARAGE_MODE=${MODE}"
+    echo "GARAGE_RPC_SECRET=${RPC_SECRET}"
+    echo "GARAGE_ADMIN_TOKEN=${ADMIN_TOKEN}"
+    echo "GARAGE_METRICS_TOKEN=${METRICS_TOKEN}"
+    if [ "${MODE}" = "single-node" ]; then
+        echo "GARAGE_DEFAULT_ACCESS_KEY=${DEFAULT_ACCESS_KEY}"
+        echo "GARAGE_DEFAULT_SECRET_KEY=${DEFAULT_SECRET_KEY}"
+        echo "GARAGE_DEFAULT_BUCKET=${DEFAULT_BUCKET}"
+    fi
+} > /etc/services.d/garage/run.env
+
+bashio::log.info "Initialization complete"
