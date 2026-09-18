@@ -130,8 +130,43 @@ region = garage
 ```
 
 #### AWS CLI
+
+**Configure profile (once):**
 ```bash
-aws --endpoint-url http://your-ha-ip:3900 s3 ls
+aws configure --profile garage
+# AWS Access Key ID: YOUR_ACCESS_KEY
+# AWS Secret Access Key: YOUR_SECRET_KEY
+# Default region name: garage
+# Default output format: json
+```
+
+**Important:** Set region to match Garage's `s3_region` (default: `garage`):
+```bash
+aws configure set region garage --profile garage
+```
+
+**Usage:**
+```bash
+# List buckets
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 ls
+
+# Create bucket
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 mb s3://my-new-bucket
+
+# Upload file
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 cp file.txt s3://my-bucket/
+
+# List objects
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 ls s3://my-bucket/
+
+# Sync directory
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 sync ./local-dir s3://my-bucket/
+
+# Delete object
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 rm s3://my-bucket/file.txt
+
+# Delete bucket (must be empty)
+aws --profile garage --endpoint-url http://your-ha-ip:3900 s3 rb s3://my-bucket
 ```
 
 ### Default Bucket (Single-node mode)
