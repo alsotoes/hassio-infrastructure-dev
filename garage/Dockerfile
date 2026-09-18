@@ -4,20 +4,17 @@ FROM ${BUILD_FROM}
 
 ARG BUILD_ARCH
 ARG GARAGE_VERSION="v2.4.1"
-ARG S6_OVERLAY_VERSION="3.1.2.1"
 ENV GARAGE_VERSION=${GARAGE_VERSION} \
     ARCH=${BUILD_ARCH}
 
 RUN \
-    if [ "${ARCH}" = "aarch64" ]; then export GARAGE_ARCH="aarch64-unknown-linux-musl"; export S6_ARCH="aarch64"; fi && \
-    if [ "${ARCH}" = "amd64" ]; then export GARAGE_ARCH="x86_64-unknown-linux-musl"; export S6_ARCH="x86_64"; fi && \
-    if [ "${ARCH}" = "armv7" ]; then export GARAGE_ARCH="armv7-unknown-linux-musleabihf"; export S6_ARCH="arm"; fi && \
-    if [ "${ARCH}" = "armhf" ]; then export GARAGE_ARCH="armv6-unknown-linux-musleabihf"; export S6_ARCH="arm"; fi && \
+    if [ "${ARCH}" = "aarch64" ]; then export GARAGE_ARCH="aarch64-unknown-linux-musl"; fi && \
+    if [ "${ARCH}" = "amd64" ]; then export GARAGE_ARCH="x86_64-unknown-linux-musl"; fi && \
+    if [ "${ARCH}" = "armv7" ]; then export GARAGE_ARCH="armv7-unknown-linux-musleabihf"; fi && \
+    if [ "${ARCH}" = "armhf" ]; then export GARAGE_ARCH="armv6-unknown-linux-musleabihf"; fi && \
     mkdir -p /tmp/garage-download && \
     curl -L -s "https://garagehq.deuxfleurs.fr/_releases/${GARAGE_VERSION}/${GARAGE_ARCH}/garage" -o /usr/local/bin/garage && \
     chmod +x /usr/local/bin/garage && \
-    curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" | tar -C / -Jxpf - && \
-    curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.xz" | tar -C / -Jxpf - && \
     rm -rf /tmp/*
 
 COPY rootfs /

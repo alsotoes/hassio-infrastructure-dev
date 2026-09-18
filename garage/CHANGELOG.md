@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-09-18
+
+### Fixed
+- Use base image's pre-installed s6-overlay (3.2.3.0) instead of installing custom version
+- Resolves "s6-overlay-suexec: fatal: can only run as pid 1" when HA supervisor runs container with Docker's init (tini)
+- Removed custom s6-overlay installation that conflicted with HA's container init system
+
 ## [0.1.3] - 2026-09-18
 
 ### Fixed
