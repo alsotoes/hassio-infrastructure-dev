@@ -1,6 +1,6 @@
 ---
 name: Garage S3 Storage
-version: "0.1.9"
+version: "0.1.10"
 slug: garage
 description: S3-compatible distributed object storage for Home Assistant
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/garage
@@ -22,8 +22,7 @@ ports_description:
   3902/tcp: "S3 Web console"
   3903/tcp: "Admin/metrics API"
 webui: "http://[HOST]:[PORT:3902]/"
-ingress: true
-ingress_port: 3902
+ingress: false
 map:
   - data:rw
 apparmor: false

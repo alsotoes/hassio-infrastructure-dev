@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-09-18
+
+### Fixed
+- Disable HA ingress for web UI (ingress: false)
+- Garage's S3 web UI uses virtual-hosted-style (subdomain) routing, incompatible with HA's path-based ingress
+- Access web UI directly via port 3902: http://homeassistant:3902/
+
 ## [0.1.9] - 2026-09-18
 
 ### Fixed
