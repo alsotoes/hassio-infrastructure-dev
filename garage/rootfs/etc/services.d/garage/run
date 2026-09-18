@@ -7,6 +7,9 @@ source /etc/services.d/garage/run.env
 
 # Garage reads config from GARAGE_CONFIG environment variable
 export GARAGE_CONFIG
+export GARAGE_DEFAULT_ACCESS_KEY
+export GARAGE_DEFAULT_SECRET_KEY
+export GARAGE_DEFAULT_BUCKET
 
 # Build command
 CMD="/usr/local/bin/garage server"

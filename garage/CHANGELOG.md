@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-09-18
+
+### Fixed
+- Export default bucket env vars (GARAGE_DEFAULT_ACCESS_KEY, etc.) in service run script
+- Fix rpc_public_addr: omit from config if empty, set localhost default for single-node
+- Garage server uses GARAGE_CONFIG env var, not --config flag
+- Finish script uses echo instead of bashio
+
 ## [0.1.8] - 2026-09-18
 
 ### Fixed

@@ -138,6 +138,10 @@ if [ -z "${RPC_PUBLIC_ADDR}" ] && [ "${MODE}" = "cluster" ]; then
     else
         bashio::log.warning "Could not auto-detect public IP. Cluster mode requires rpc_public_addr to be set."
     fi
+elif [ -z "${RPC_PUBLIC_ADDR}" ] && [ "${MODE}" = "single-node" ]; then
+    # For single-node, use localhost
+    RPC_PUBLIC_ADDR="127.0.0.1:3901"
+    bashio::log.info "Single-node mode: using localhost for RPC public address"
 fi
 
 # ------------------------------------------------------------------------------
@@ -172,8 +176,15 @@ compression_level = ${COMPRESSION_LEVEL}
 block_size = "${BLOCK_SIZE}"
 
 rpc_bind_addr = "${RPC_BIND_ADDR}"
-rpc_public_addr = "${RPC_PUBLIC_ADDR}"
 rpc_secret = "${RPC_SECRET}"
+EOF
+
+# Only set rpc_public_addr if provided (required for cluster, optional for single-node)
+if [ -n "${RPC_PUBLIC_ADDR}" ]; then
+    echo "rpc_public_addr = \"${RPC_PUBLIC_ADDR}\"" >> "${GARAGE_CONFIG}"
+fi
+
+cat >> "${GARAGE_CONFIG}" <<EOF
 
 [s3_api]
 s3_region = "${S3_REGION}"
