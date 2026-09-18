@@ -8,9 +8,6 @@ ARG S6_OVERLAY_VERSION="3.1.2.1"
 ENV GARAGE_VERSION=${GARAGE_VERSION} \
     ARCH=${BUILD_ARCH}
 
-# Use bash for the build script
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 RUN \
     if [ "${ARCH}" = "aarch64" ]; then export GARAGE_ARCH="aarch64-unknown-linux-musl"; export S6_ARCH="aarch64"; fi && \
     if [ "${ARCH}" = "amd64" ]; then export GARAGE_ARCH="x86_64-unknown-linux-musl"; export S6_ARCH="x86_64"; fi && \
