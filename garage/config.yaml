@@ -1,6 +1,6 @@
 ---
 name: Garage S3 Storage
-version: "0.1.4"
+version: "0.1.5"
 slug: garage
 description: S3-compatible distributed object storage for Home Assistant
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/garage
