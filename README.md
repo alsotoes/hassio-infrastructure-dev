@@ -1,8 +1,8 @@
-# My personal Home Assistant 🏠 Add-ons
+# My personal Home Assistant 🏠 Add-ons (dev repo)
 
 ## Add Repository to HA
 
-[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Falsotoes%2Fhassio-infrastructure)
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Falsotoes%2Fhassio-infrastructure-dev)
 
 ## About
 
@@ -18,12 +18,12 @@ Home Assistant add-on store, a possibility to add a repository is provided.
 Use the following URL to add this repository:
 
 ```txt
-https://github.com/alsotoes/hassio-infrastructure
+https://github.com/alsotoes/hassio-infrastructure-dev
 ```
 
 ## Add-ons provided by this repository
 
-### &#10003; [cups addon](https://github.com/alsotoes/hassio-infrastructure/blob/main/cups)
+### &#10003; [cups addon](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/cups)
 
 ![Supports amd64 Architecture][amd64-shield] 
 ![Supports aarch64 Architecture][aarch64-shield] 
@@ -31,9 +31,9 @@ https://github.com/alsotoes/hassio-infrastructure
 
 CUPS is a modular printing system for Unix-like computer operating systems which allows a computer to act as a print server.
 
-[cups addon documentation](https://github.com/alsotoes/hassio-infrastructure/blob/main/cups/README.md)
+[cups addon documentation](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/cups/README.md)
 
-### &#10003; [etcd addon](https://github.com/alsotoes/hassio-infrastructure/blob/main/etcd)
+### &#10003; [etcd addon](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/etcd)
 
 ![Supports amd64 Architecture][amd64-shield]
 ![Supports aarch64 Architecture][aarch64-shield]
@@ -41,9 +41,9 @@ CUPS is a modular printing system for Unix-like computer operating systems which
 
 etcd is a distributed reliable key-value store for the most critical data of a distributed system.
 
-[etcd addon documentation](https://github.com/alsotoes/hassio-infrastructure/blob/main/etcd/README.md)
+[etcd addon documentation](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/etcd/README.md)
 
-### &#10003; [smb1-proxy addon](https://github.com/alsotoes/hassio-infrastructure/blob/main/smb1-proxy)
+### &#10003; [smb1-proxy addon](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/smb1-proxy)
 
 ![Supports amd64 Architecture][amd64-shield]
 ![Supports aarch64 Architecture][aarch64-shield]
@@ -53,9 +53,9 @@ This add-on acts as a **proxy**:
 - Connects to the legacy SMB1 share.
 - Re-exports it as a modern **SMB2/SMB3 share** that Home Assistant and other devices can mount safely.
 
-[smb1-proxy addon documentation](https://github.com/alsotoes/hassio-infrastructure/blob/main/smb1-proxy/README.md)
+[smb1-proxy addon documentation](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/smb1-proxy/README.md)
 
-### &#10003; [afp2s3](https://github.com/alsotoes/hassio-infrastructure/blob/main/afp2s3)
+### &#10003; [afp2s3](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/afp2s3)
 
 ![Supports amd64 Architecture][amd64-shield]
 ![Supports aarch64 Architecture][aarch64-shield]
@@ -63,7 +63,18 @@ This add-on acts as a **proxy**:
 
 This add-on mounts a remote AFP (Apple Filing Protocol) share into the add-on's filesystem and exposes it as an S3-compatible object storage endpoint using Minio.
 
-[afp2s3 addon documentation](https://github.com/alsotoes/hassio-infrastructure/blob/main/afp2s3/README.md)
+[afp2s3 addon documentation](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/afp2s3/README.md)
+
+### &#10003; [Garage S3 Storage](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/garage)
+
+![Supports amd64 Architecture][amd64-shield]
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports armv7 Architecture][armv7-shield]
+![Supports armhf Architecture][armhf-shield]
+
+S3-compatible distributed object storage for Home Assistant, powered by Garage. Supports single-node and multi-node cluster modes with replication.
+
+[Garage S3 Storage documentation](https://github.com/alsotoes/hassio-infrastructure-dev/blob/main/garage/README.md)
 
 ## License
 
