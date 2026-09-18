@@ -5,8 +5,11 @@
 # shellcheck source=/dev/null
 source /etc/services.d/garage/run.env
 
+# Garage reads config from GARAGE_CONFIG environment variable
+export GARAGE_CONFIG
+
 # Build command
-CMD="/usr/local/bin/garage server --config ${GARAGE_CONFIG}"
+CMD="/usr/local/bin/garage server"
 
 if [ "${GARAGE_MODE}" = "single-node" ]; then
     CMD="${CMD} --single-node --default-bucket"

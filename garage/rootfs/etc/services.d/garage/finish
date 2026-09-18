@@ -4,5 +4,5 @@
 # Graceful shutdown - Garage handles SIGTERM properly
 # This script runs after the main process exits
 
-bashio::log.info "Garage service stopped"
+echo "Garage service stopped"
 exit 0
