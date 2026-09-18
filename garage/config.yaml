@@ -26,6 +26,7 @@ ingress: true
 ingress_port: 3902
 map:
   - data:rw
+apparmor: true
 options:
   mode: "single-node"
   rpc_bind_addr: "[::]:3901"
