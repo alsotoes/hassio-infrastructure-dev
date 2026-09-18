@@ -90,9 +90,21 @@ bootstrap_peers:
 
 ### S3 Web UI
 
-Access via Home Assistant ingress (sidebar) or directly at `http://your-ha-ip:3902/`.
+Garage's web UI uses **virtual-hosted-style routing** (subdomain per bucket). It does NOT work via direct IP access (`http://ip:3902/` returns 404).
 
-Login with your S3 credentials (access key / secret key).
+**Access methods:**
+
+| Method | URL | Requirements |
+|--------|-----|--------------|
+| **DNS + virtual host** | `http://mybucket.web.garage.local:3902/` | DNS entry for `*.web.garage.local` |
+| **Reverse proxy** | `https://storage.yourdomain.com/` | Proxy rewrites `Host` header to `mybucket.web.garage.local` |
+| **Local testing** | `http://homeassistant.local:3902/` | mDNS + `/etc/hosts` entry for `*.web.garage.local` |
+
+**To use the web UI:**
+1. Create a bucket via S3 API (rclone, AWS CLI, etc.)
+2. Enable static website hosting on the bucket: `garage bucket website mybucket --index index.html`
+3. Upload `index.html` to the bucket
+4. Access via `http://mybucket.web.garage.local:3902/`
 
 ### S3 Clients
 
@@ -167,6 +179,8 @@ The addon includes a health check on the S3 API endpoint (`/health`).
 **Cluster won't form** - Ensure `rpc_public_addr` is correct and `rpc_secret` matches on all nodes.
 
 **S3 client connection refused** - Check firewall, ensure port 3900 is accessible.
+
+**Web UI returns 404** - Garage web UI uses virtual-hosted-style (subdomain per bucket). Direct IP access (`http://ip:3902/`) returns 404. Use `http://bucket.web.garage.local:3902/` with proper DNS/proxy, or configure reverse proxy to rewrite `Host` header.
 
 ## Links
 
