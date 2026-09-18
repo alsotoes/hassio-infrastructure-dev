@@ -13,6 +13,7 @@ RUN \
     if [ "${ARCH}" = "amd64" ]; then export GARAGE_ARCH="x86_64-unknown-linux-musl"; export S6_ARCH="x86_64"; fi && \
     if [ "${ARCH}" = "armv7" ]; then export GARAGE_ARCH="armv7-unknown-linux-musleabihf"; export S6_ARCH="arm"; fi && \
     if [ "${ARCH}" = "armhf" ]; then export GARAGE_ARCH="armv6-unknown-linux-musleabihf"; export S6_ARCH="arm"; fi && \
+    apk add --no-cache openssl && \
     mkdir -p /tmp/garage-download && \
     curl -L -s "https://garagehq.deuxfleurs.fr/_releases/${GARAGE_VERSION}/${GARAGE_ARCH}/garage" -o /usr/local/bin/garage && \
     chmod +x /usr/local/bin/garage && \
