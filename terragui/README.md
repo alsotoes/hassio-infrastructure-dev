@@ -116,6 +116,120 @@ Both paths survive addon updates and restarts.
 
 TerraGUI works with any Terraform backend (S3, GCS, Azure, Consul, etc.). Configure your backend in your Terraform files as usual.
 
+## Integration with Home Assistant Addons
+
+### Using Garage S3 as Terraform State Backend
+
+If you have the **Garage S3 Storage** addon running in the same HA instance, you can use it as a Terraform S3 backend for state storage.
+
+**Garage S3 Addon Details:**
+- S3 API endpoint: `http://homeassistant.local:3900` (or container name `garage` on port 3900)
+- Region: `garage` (default)
+- Access Key / Secret Key: From Garage addon logs or `/data/garage-secrets.env`
+
+**Terraform Backend Configuration:**
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "terraform-state"
+    key            = "production/terraform.tfstate"
+    region         = "garage"
+    endpoint       = "http://garage:3900"  # Use container name for inter-addon communication
+    access_key     = "YOUR_GARAGE_ACCESS_KEY"
+    secret_key     = "YOUR_GARAGE_SECRET_KEY"
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    force_path_style            = true
+  }
+}
+```
+
+**Important Notes:**
+- Use the **container name** (`garage`) as hostname for inter-addon communication (not `homeassistant.local`)
+- Garage runs on port 3900 for S3 API
+- Enable `force_path_style = true` for Garage compatibility
+- Create the bucket first: `aws --endpoint-url http://garage:3900 --profile garage s3 mb s3://terraform-state`
+
+**Alternative: Using HA Host Network**
+If you prefer host networking, use:
+```hcl
+endpoint = "http://homeassistant.local:3900"
+# or your HA IP
+endpoint = "http://192.168.x.x:3900"
+```
+
+### Using InfluxDB v2 for Metrics Export
+
+If you have **InfluxDB v2** running as an addon (e.g., `influxdb` addon), configure TerraGUI to export metrics:
+
+**InfluxDB Addon Details:**
+- Default URL: `http://influxdb:8086` (container name)
+- Token: Generated on first run, check addon logs
+- Org: Default `homeassistant` or your configured org
+- Bucket: Create a bucket named `tgm` or your preferred name
+
+**TerraGUI Addon Configuration:**
+```yaml
+metrics_enabled: true
+metrics_backend: "influxdb"
+metrics_prefix: "tgm"
+metrics_influxdb_url: "http://influxdb:8086"
+metrics_influxdb_token: "YOUR_INFLUXDB_TOKEN"
+metrics_influxdb_org: "homeassistant"
+metrics_influxdb_bucket: "tgm"
+metrics_influxdb_verify_ssl: false
+```
+
+**Steps:**
+1. Install InfluxDB addon from HA addon store
+2. Configure InfluxDB: create org `homeassistant`, bucket `tgm`, generate token
+3. Copy token to TerraGUI config `metrics_influxdb_token`
+4. Enable metrics in TerraGUI: `metrics_enabled: true`, `metrics_backend: "influxdb"`
+5. Restart TerraGUI addon
+
+**Verify:** Check InfluxDB Data Explorer for `tgm_*` measurements.
+
+### Using Both Together
+
+Example Terraform workspace with Garage S3 backend and TerraGUI metrics to InfluxDB:
+
+```hcl
+# versions.tf
+terraform {
+  required_version = ">= 1.5"
+  
+  backend "s3" {
+    bucket         = "terraform-state"
+    key            = "${terraform.workspace}/terraform.tfstate"
+    region         = "garage"
+    endpoint       = "http://garage:3900"
+    access_key     = var.garage_access_key
+    secret_key     = var.garage_secret_key
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    force_path_style            = true
+  }
+}
+
+variable "garage_access_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "garage_secret_key" {
+  type      = string
+  sensitive = true
+}
+```
+
+Then in TerraGUI UI:
+1. Add workspace pointing to your Terraform directory
+2. Set variables `garage_access_key` and `garage_secret_key` in workspace variables
+3. Run plan/apply - state stored in Garage S3
+4. Metrics automatically exported to InfluxDB
+
 ## Troubleshooting
 
 ### Workspace not showing
