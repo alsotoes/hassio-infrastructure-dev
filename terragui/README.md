@@ -55,11 +55,10 @@ A local, open-source Terraform Cloud-like UI for managing Terraform workspaces o
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `metrics_enabled` | Enable metrics export | `false` |
 | `metrics_backend` | Backend: `disabled`, `influxdb`, `prometheus`, `graphite` | `disabled` |
 | `metrics_prefix` | Metric name prefix | `tgm` |
 
-**Note:** Home Assistant's addon configuration UI shows all backend options at once (it doesn't support conditional fields). Only fill in the options for your selected backend.
+**Note:** Home Assistant's addon configuration UI shows all backend options at once (it doesn't support conditional fields). Only fill in the options for your selected backend. Set `metrics_backend: disabled` to turn off metrics export.
 
 #### InfluxDB v2 Options (when `metrics_backend: influxdb`)
 

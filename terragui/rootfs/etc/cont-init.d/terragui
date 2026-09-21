@@ -103,7 +103,6 @@ enforce_on_apply = ${sentinel_enforce_on_apply}
 # ──────────────────────────────────────────────────────────────
 [metrics]
 
-enabled = ${metrics_enabled}
 backend = ${metrics_backend}
 prefix = ${metrics_prefix}
 
