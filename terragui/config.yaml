@@ -1,6 +1,6 @@
 ---
 name: TerraGUI Terraform Manager
-version: "0.1.2"
+version: "0.1.3"
 slug: terragui
 description: Local Terraform Cloud-like UI for managing Terraform workspaces
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui
@@ -35,7 +35,7 @@ options:
   sentinel_enforce_on_plan: false
   sentinel_enforce_on_apply: false
   metrics_enabled: false
-  metrics_backend: ""
+  metrics_backend: "disabled"
   metrics_prefix: "tgm"
   metrics_influxdb_url: ""
   metrics_influxdb_token: ""
@@ -76,7 +76,7 @@ schema:
   sentinel_enforce_on_plan: "bool"
   sentinel_enforce_on_apply: "bool"
   metrics_enabled: "bool"
-  metrics_backend: "list(influxdb|prometheus|graphite|)"
+  metrics_backend: "list(disabled|influxdb|prometheus|graphite)"
   metrics_prefix: "str"
   metrics_influxdb_url: "str?"
   metrics_influxdb_token: "password?"

@@ -56,10 +56,38 @@ A local, open-source Terraform Cloud-like UI for managing Terraform workspaces o
 | Option | Description | Default |
 |--------|-------------|---------|
 | `metrics_enabled` | Enable metrics export | `false` |
-| `metrics_backend` | Backend: influxdb, prometheus, graphite | `` |
+| `metrics_backend` | Backend: `disabled`, `influxdb`, `prometheus`, `graphite` | `disabled` |
 | `metrics_prefix` | Metric name prefix | `tgm` |
 
-See configuration UI for InfluxDB/Prometheus/Graphite specific options.
+**Note:** Home Assistant's addon configuration UI shows all backend options at once (it doesn't support conditional fields). Only fill in the options for your selected backend.
+
+#### InfluxDB v2 Options (when `metrics_backend: influxdb`)
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `metrics_influxdb_url` | InfluxDB URL (e.g., `http://influxdb:8086`) | `` |
+| `metrics_influxdb_token` | InfluxDB token | `` |
+| `metrics_influxdb_org` | InfluxDB organization | `` |
+| `metrics_influxdb_bucket` | InfluxDB bucket name | `tgm` |
+| `metrics_influxdb_verify_ssl` | Verify SSL certificates | `true` |
+
+#### Prometheus Pushgateway Options (when `metrics_backend: prometheus`)
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `metrics_prometheus_url` | Pushgateway URL (e.g., `http://prometheus:9091`) | `` |
+| `metrics_prometheus_job` | Job name | `tgm` |
+| `metrics_prometheus_username` | Basic auth username | `` |
+| `metrics_prometheus_password` | Basic auth password | `` |
+| `metrics_prometheus_verify_ssl` | Verify SSL certificates | `true` |
+
+#### Graphite Options (when `metrics_backend: graphite`)
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `metrics_graphite_host` | Graphite host | `` |
+| `metrics_graphite_port` | Graphite port | `2003` |
+| `metrics_graphite_protocol` | Protocol: `tcp` or `udp` | `tcp` |
 
 ### TerraGUI Storage Backend (Execution History & Artifacts)
 
