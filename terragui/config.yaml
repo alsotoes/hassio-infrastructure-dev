@@ -1,6 +1,6 @@
 ---
 name: TerraGUI Terraform Manager
-version: "0.1.1"
+version: "0.1.2"
 slug: terragui
 description: Local Terraform Cloud-like UI for managing Terraform workspaces
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui

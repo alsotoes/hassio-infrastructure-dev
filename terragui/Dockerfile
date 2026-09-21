@@ -1,8 +1,9 @@
 # hadolint global ignore=DL3008
 ARG BUILD_FROM
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 # Install Python 3, pip, and terraform
 RUN apk add --no-cache \
@@ -37,3 +38,24 @@ COPY rootfs /
 # Set entrypoint
 ENTRYPOINT ["/init"]
 CMD []
+
+# Build arguments
+ARG BUILD_VERSION
+ARG BUILD_ARCH
+
+# Labels
+LABEL \
+    io.hass.name="TerraGUI Terraform Manager" \
+    io.hass.description="Local Terraform Cloud-like UI for managing Terraform workspaces" \
+    io.hass.arch="${BUILD_ARCH}" \
+    io.hass.type="addon" \
+    io.hass.version=${BUILD_VERSION} \
+    maintainer="Alvaro Soto <alsotoes@gmail.com>" \
+    org.opencontainers.image.title="terragui" \
+    org.opencontainers.image.description="Local Terraform Cloud-like UI for managing Terraform workspaces" \
+    org.opencontainers.image.vendor="Alvaro Soto" \
+    org.opencontainers.image.authors="Alvaro Soto <alsotoes@gmail.com>" \
+    org.opencontainers.image.licenses="MIT license" \
+    org.opencontainers.image.url="https://headup.ws" \
+    org.opencontainers.image.source="https://github.com/alsotoes/hassio-infrastructure-dev" \
+    org.opencontainers.image.version=${BUILD_VERSION}

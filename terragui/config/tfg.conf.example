@@ -1,0 +1,155 @@
+# tfg.conf — Terraform Graphical Manager Configuration
+# Copy this file to config/tfg.conf and edit as needed.
+# Run the app with:  tgm start   or   python run.py
+
+# ──────────────────────────────────────────────────────────────
+# Workspaces
+# ──────────────────────────────────────────────────────────────
+[workspaces]
+
+# Absolute (or relative) path to the root directory that contains
+# your Terraform repositories / workspaces.
+# Any subdirectory with at least one .tf file is treated as a
+# workspace and will appear in the sidebar tree.
+repos_root = ./examples/repos
+
+# ──────────────────────────────────────────────────────────────
+# UI
+# ──────────────────────────────────────────────────────────────
+[ui]
+
+# Display name shown in the browser tab and sidebar header.
+site_name = Terraform Graphical Manager
+
+# URL used for the "View on GitHub" link in the sidebar.
+repo_url = https://github.com/eandresr/terraform-graphical-manager
+
+# UI theme name (currently only: terraform-cloud)
+theme = terraform-cloud
+
+# ──────────────────────────────────────────────────────────────
+# Execution
+# ──────────────────────────────────────────────────────────────
+[execution]
+
+# Maximum number of Terraform operations that can run in parallel.
+max_concurrent = 3
+
+# ──────────────────────────────────────────────────────────────
+# Terraform versions
+# ──────────────────────────────────────────────────────────────
+[terraform]
+
+# Optional: absolute path to a folder containing versioned Terraform
+# binaries.  Each sub-folder should be named after the version and
+# contain a 'terraform' executable, e.g.:
+#   /opt/terraform-versions/
+#   ├── 1.6.0/terraform
+#   └── 1.7.5/terraform
+# Leave blank to use only the system Terraform on PATH.
+versions_folder =
+
+# Default version used for workspaces without an explicit pin.
+# Set to a version string (e.g. 1.7.5) or leave as 'system'.
+default_version = system
+
+# ──────────────────────────────────────────────────────────────
+# Security (portal lock)
+# ──────────────────────────────────────────────────────────────
+[security]
+
+# PBKDF2 hash of the portal lock password.
+# Do NOT set this manually — use the Settings UI to set or change
+# the password; it will be hashed and stored here automatically.
+# Leave blank to run without authentication (default).
+password_hash =
+
+# ──────────────────────────────────────────────────────────────
+# Sentinel Policy Integration
+# ──────────────────────────────────────────────────────────────
+[sentinel]
+
+# Full path to the Sentinel CLI binary.
+# Leave blank to use 'sentinel' found on PATH.
+cli_path =
+
+# Absolute path to a directory containing global policy sets.
+# Each immediate sub-directory is treated as a policy set and must
+# contain one or more .sentinel policy files.  An optional
+# sentinel.hcl file inside the policy-set directory controls
+# per-policy enforcement levels:
+#
+#   /opt/sentinel-policies/
+#   ├── base/
+#   │   ├── require-tags.sentinel
+#   │   ├── no-public-s3.sentinel
+#   │   └── sentinel.hcl          ← optional enforcement overrides
+#   └── compliance/
+#       └── restrict-regions.sentinel
+#
+# Global policy sets are applied to every workspace in addition to
+# any workspace-level extra policies.
+# Leave blank to disable global policy enforcement.
+global_policies =
+
+# Automatically run Sentinel checks after every 'terraform plan'.
+# Results are stored with the execution and shown in the workspace
+# Sentinel tab.
+# Set to 'true' to enable.
+enforce_on_plan = false
+
+# Block 'terraform apply' when Sentinel checks fail.
+# hard-mandatory and soft-mandatory policy failures will prevent the
+# apply from proceeding.  Requires enforce_on_plan = true.
+# Set to 'true' to enable.
+enforce_on_apply = false
+
+# ──────────────────────────────────────────────────────────────
+# Metrics Export
+# ──────────────────────────────────────────────────────────────
+[metrics]
+
+# Set to 'true' to enable metrics export globally.
+enabled = false
+
+# Target backend: influxdb | prometheus | graphite
+# Leave blank to disable.
+backend =
+
+# Common prefix applied to all metric names / measurements.
+prefix = tgm
+
+# ── InfluxDB v2 ────────────────────────────────────────────────
+# influxdb_url      = http://localhost:8086
+# influxdb_token    = my-influxdb-token
+# influxdb_org      = my-org
+# influxdb_bucket   = tgm
+# influxdb_verify_ssl = true
+
+influxdb_url =
+influxdb_token =
+influxdb_org =
+influxdb_bucket = tgm
+influxdb_verify_ssl = true
+
+# ── Prometheus Pushgateway ─────────────────────────────────────
+# prometheus_url      = http://localhost:9091
+# prometheus_job      = tgm
+# prometheus_username =  (optional, for basic auth)
+# prometheus_password =  (optional)
+# prometheus_verify_ssl = true
+
+prometheus_url =
+prometheus_job = tgm
+prometheus_username =
+prometheus_password =
+prometheus_verify_ssl = true
+
+# ── Graphite (plaintext) ───────────────────────────────────────
+# graphite_host     = localhost
+# graphite_port     = 2003
+# graphite_protocol = tcp   # or udp
+
+graphite_host =
+graphite_port = 2003
+graphite_protocol = tcp
