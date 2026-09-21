@@ -8,6 +8,38 @@ bashio::log.info "TerraGUI: Starting configuration..."
 mkdir -p /config/terraform
 mkdir -p /data
 
+# Set TerraGUI storage backend environment variables
+# Priority: env var > tfg.conf > local (default)
+export TERRAFORM_GRAPHICAL_BACKEND="${storage_backend}"
+
+case "${storage_backend}" in
+    aws)
+        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${storage_s3_bucket}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_ACCESS_KEY_ID="${storage_s3_access_key}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_SECRET_ACCESS_KEY="${storage_s3_secret_key}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_REGION="${storage_s3_region}"
+        if [ -n "${storage_s3_endpoint}" ]; then
+            export AWS_ENDPOINT_URL="${storage_s3_endpoint}"
+        fi
+        bashio::log.info "TerraGUI: Using AWS S3 storage backend (bucket: ${storage_s3_bucket})"
+        ;;
+    gcp)
+        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${storage_gcp_bucket}"
+        export TERRAFORM_GRAPHICAL_BACKEND_GOOGLE_CREDENTIALS="${storage_gcp_credentials}"
+        bashio::log.info "TerraGUI: Using GCP Cloud Storage backend (bucket: ${storage_gcp_bucket})"
+        ;;
+    azure)
+        export TERRAFORM_GRAPHICAL_BACKEND_CONTAINER="${storage_azure_container}"
+        export TERRAFORM_GRAPHICAL_BACKEND_CONNECTION_STRING="${storage_azure_connection_string}"
+        bashio::log.info "TerraGUI: Using Azure Blob Storage backend (container: ${storage_azure_container})"
+        ;;
+    local|*)
+        export TERRAFORM_GRAPHICAL_BACKEND_LOCAL_PATH="${storage_local_path}"
+        mkdir -p "${storage_local_path}"
+        bashio::log.info "TerraGUI: Using local filesystem storage (path: ${storage_local_path})"
+        ;;
+esac
+
 # Generate config file
 CONFIG_FILE="/app/config/tfg.conf"
 

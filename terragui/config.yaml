@@ -1,6 +1,6 @@
 ---
 name: TerraGUI Terraform Manager
-version: "0.1.0"
+version: "0.1.1"
 slug: terragui
 description: Local Terraform Cloud-like UI for managing Terraform workspaces
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui
@@ -50,6 +50,18 @@ options:
   metrics_graphite_host: ""
   metrics_graphite_port: 2003
   metrics_graphite_protocol: "tcp"
+  # TerraGUI Storage Backend (for execution history, plan artifacts, run metadata)
+  storage_backend: "local"
+  storage_s3_bucket: ""
+  storage_s3_access_key: ""
+  storage_s3_secret_key: ""
+  storage_s3_region: "garage"
+  storage_s3_endpoint: "http://garage:3900"
+  storage_gcp_bucket: ""
+  storage_gcp_credentials: ""
+  storage_azure_container: ""
+  storage_azure_connection_string: ""
+  storage_local_path: "/data/terraform-graphical-manager"
 schema:
   repos_root: "str"
   site_name: "str"
@@ -79,3 +91,14 @@ schema:
   metrics_graphite_host: "str?"
   metrics_graphite_port: "int(1,65535)"
   metrics_graphite_protocol: "list(tcp|udp)"
+  storage_backend: "list(local|aws|gcp|azure)"
+  storage_s3_bucket: "str?"
+  storage_s3_access_key: "password?"
+  storage_s3_secret_key: "password?"
+  storage_s3_region: "str"
+  storage_s3_endpoint: "str?"
+  storage_gcp_bucket: "str?"
+  storage_gcp_credentials: "password?"
+  storage_azure_container: "str?"
+  storage_azure_connection_string: "password?"
+  storage_local_path: "str"

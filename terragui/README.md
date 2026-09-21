@@ -61,6 +61,48 @@ A local, open-source Terraform Cloud-like UI for managing Terraform workspaces o
 
 See configuration UI for InfluxDB/Prometheus/Graphite specific options.
 
+### TerraGUI Storage Backend (Execution History & Artifacts)
+
+TerraGUI persists execution history, plan artifacts, and run metadata. By default this uses the local filesystem (`/data/terraform-graphical-manager`). You can configure cloud storage for persistence across container recreations.
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `storage_backend` | Backend: local, aws, gcp, azure | `local` |
+| `storage_local_path` | Local filesystem path | `/data/terraform-graphical-manager` |
+
+#### AWS S3 (e.g., Garage S3)
+| Option | Description | Default |
+|--------|-------------|---------|
+| `storage_s3_bucket` | S3 bucket name | `` |
+| `storage_s3_access_key` | S3 access key | `` |
+| `storage_s3_secret_key` | S3 secret key | `` |
+| `storage_s3_region` | S3 region | `garage` |
+| `storage_s3_endpoint` | S3 endpoint URL (for Garage) | `http://garage:3900` |
+
+#### GCP Cloud Storage
+| Option | Description | Default |
+|--------|-------------|---------|
+| `storage_gcp_bucket` | GCS bucket name | `` |
+| `storage_gcp_credentials` | Service account JSON | `` |
+
+#### Azure Blob Storage
+| Option | Description | Default |
+|--------|-------------|---------|
+| `storage_azure_container` | Container name | `` |
+| `storage_azure_connection_string` | Connection string | `` |
+
+**Example: Garage S3 for TerraGUI execution history**
+```yaml
+storage_backend: "aws"
+storage_s3_bucket: "tgm-history"
+storage_s3_access_key: "YOUR_GARAGE_ACCESS_KEY"
+storage_s3_secret_key: "YOUR_GARAGE_SECRET_KEY"
+storage_s3_region: "garage"
+storage_s3_endpoint: "http://garage:3900"
+```
+
+This is separate from Terraform state backend - it stores TerraGUI's own execution logs, plans, and metadata.
+
 ## Usage
 
 ### Adding Terraform Workspaces

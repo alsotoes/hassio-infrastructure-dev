@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-09-21
+
+### Added
+- TerraGUI storage backend configuration (execution history, plan artifacts, run metadata)
+- Support for AWS S3 (Garage), GCP Cloud Storage, Azure Blob Storage
+- Environment variable configuration: TERRAFORM_GRAPHICAL_BACKEND
+- Local filesystem fallback with configurable path
+
 ## [0.1.0] - 2026-09-21
 
 ### Added
