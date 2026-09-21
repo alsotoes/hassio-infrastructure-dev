@@ -1,0 +1,81 @@
+---
+name: TerraGUI Terraform Manager
+version: "0.1.0"
+slug: terragui
+description: Local Terraform Cloud-like UI for managing Terraform workspaces
+url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui
+init: true
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - armhf
+startup: system
+ports:
+  5005/tcp: 5005
+ports_description:
+  5005/tcp: "TerraGUI web interface"
+webui: "http://[HOST]:[PORT:5005]/"
+ingress: true
+ingress_port: 5005
+map:
+  - config:rw
+  - data:rw
+options:
+  repos_root: "/config/terraform"
+  site_name: "Terraform Graphical Manager"
+  repo_url: "https://github.com/eandresr/terraform-graphical-manager"
+  theme: "terraform-cloud"
+  max_concurrent: 3
+  terraform_versions_folder: ""
+  terraform_default_version: "system"
+  password_hash: ""
+  sentinel_cli_path: ""
+  sentinel_global_policies: ""
+  sentinel_enforce_on_plan: false
+  sentinel_enforce_on_apply: false
+  metrics_enabled: false
+  metrics_backend: ""
+  metrics_prefix: "tgm"
+  metrics_influxdb_url: ""
+  metrics_influxdb_token: ""
+  metrics_influxdb_org: ""
+  metrics_influxdb_bucket: "tgm"
+  metrics_influxdb_verify_ssl: true
+  metrics_prometheus_url: ""
+  metrics_prometheus_job: "tgm"
+  metrics_prometheus_username: ""
+  metrics_prometheus_password: ""
+  metrics_prometheus_verify_ssl: true
+  metrics_graphite_host: ""
+  metrics_graphite_port: 2003
+  metrics_graphite_protocol: "tcp"
+schema:
+  repos_root: "str"
+  site_name: "str"
+  repo_url: "str"
+  theme: "str"
+  max_concurrent: "int(1,10)"
+  terraform_versions_folder: "str?"
+  terraform_default_version: "str"
+  password_hash: "password?"
+  sentinel_cli_path: "str?"
+  sentinel_global_policies: "str?"
+  sentinel_enforce_on_plan: "bool"
+  sentinel_enforce_on_apply: "bool"
+  metrics_enabled: "bool"
+  metrics_backend: "list(influxdb|prometheus|graphite|)"
+  metrics_prefix: "str"
+  metrics_influxdb_url: "str?"
+  metrics_influxdb_token: "password?"
+  metrics_influxdb_org: "str?"
+  metrics_influxdb_bucket: "str"
+  metrics_influxdb_verify_ssl: "bool"
+  metrics_prometheus_url: "str?"
+  metrics_prometheus_job: "str"
+  metrics_prometheus_username: "str?"
+  metrics_prometheus_password: "password?"
+  metrics_prometheus_verify_ssl: "bool"
+  metrics_graphite_host: "str?"
+  metrics_graphite_port: "int(1,65535)"
+  metrics_graphite_protocol: "list(tcp|udp)"

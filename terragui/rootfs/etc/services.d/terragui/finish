@@ -1,0 +1,5 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+echo "TerraGUI: Service stopped"
+exit 0

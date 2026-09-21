@@ -1,0 +1,18 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+# Health check for TerraGUI web interface
+# Returns 0 if healthy, 1 if unhealthy
+
+set -euo pipefail
+
+HEALTH_ENDPOINT="http://127.0.0.1:5005/"
+TIMEOUT=3
+
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time "${TIMEOUT}" "${HEALTH_ENDPOINT}" 2>/dev/null || echo "000")
+
+if [ "${HTTP_CODE}" != "000" ]; then
+    exit 0
+else
+    exit 1
+fi
