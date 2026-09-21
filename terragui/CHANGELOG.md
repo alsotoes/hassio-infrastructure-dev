@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-09-21
+
+### Added
+- Plain text `password` option in addon config (replaces `password_hash`)
+- Auto-generates PBKDF2-SHA256 hash at startup using Python 3 (installed in Dockerfile)
+- User-friendly: set password directly in HA config UI
+
 ## [0.1.4] - 2026-09-21
 
 ### Fixed

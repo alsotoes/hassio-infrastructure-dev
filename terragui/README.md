@@ -40,7 +40,7 @@ A local, open-source Terraform Cloud-like UI for managing Terraform workspaces o
 | `max_concurrent` | Max parallel Terraform operations | `3` |
 | `terraform_versions_folder` | Path to versioned Terraform binaries | `` (system only) |
 | `terraform_default_version` | Default Terraform version | `system` |
-| `password_hash` | PBKDF2 hash for portal lock (set via UI) | `` (no auth) |
+| `password` | Plain text password for portal lock (auto-hashed) | `` (no auth) |
 
 ### Sentinel Policies
 

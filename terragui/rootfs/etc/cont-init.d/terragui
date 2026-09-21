@@ -8,6 +8,20 @@ bashio::log.info "TerraGUI: Starting configuration..."
 mkdir -p /config/terraform
 mkdir -p /data
 
+# Generate password hash from plain text password if provided
+PASSWORD_HASH=""
+if [ -n "${password}" ]; then
+    # PBKDF2-HMAC-SHA256 with 260,000 iterations (matches TerraGUI auth.py)
+    PASSWORD_HASH=$(python3 -c "
+import hashlib, secrets, sys
+password = sys.argv[1]
+salt = secrets.token_hex(16)
+dk = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 260000)
+print(f'pbkdf2\$sha256\$260000\${salt}\${dk.hex()}')
+" "${password}")
+    bashio::log.info "TerraGUI: Generated password hash for portal lock"
+fi
+
 # Set TerraGUI storage backend environment variables
 # Priority: env var > tfg.conf > local (default)
 export TERRAFORM_GRAPHICAL_BACKEND="${storage_backend}"
@@ -86,7 +100,7 @@ default_version = ${terraform_default_version}
 # ──────────────────────────────────────────────────────────────
 [security]
 
-password_hash = ${password_hash}
+password_hash = ${PASSWORD_HASH}
 
 # ──────────────────────────────────────────────────────────────
 # Sentinel Policy Integration

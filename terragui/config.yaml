@@ -1,6 +1,6 @@
 ---
 name: TerraGUI Terraform Manager
-version: "0.1.4"
+version: "0.1.5"
 slug: terragui
 description: Local Terraform Cloud-like UI for managing Terraform workspaces
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui
@@ -29,7 +29,7 @@ options:
   max_concurrent: 3
   terraform_versions_folder: ""
   terraform_default_version: "system"
-  password_hash: ""
+  password: ""
   sentinel_cli_path: ""
   sentinel_global_policies: ""
   sentinel_enforce_on_plan: false
@@ -69,7 +69,7 @@ schema:
   max_concurrent: "int(1,10)"
   terraform_versions_folder: "str?"
   terraform_default_version: "str"
-  password_hash: "password?"
+  password: "password?"
   sentinel_cli_path: "str?"
   sentinel_global_policies: "str?"
   sentinel_enforce_on_plan: "bool"
