@@ -11,9 +11,49 @@ bashio::log.info "TerraGUI: Starting configuration..."
 mkdir -p /config/terraform
 mkdir -p /data
 
+# Get config values using bashio
+REPOS_ROOT=$(bashio::config 'repos_root')
+SITE_NAME=$(bashio::config 'site_name')
+REPO_URL=$(bashio::config 'repo_url')
+THEME=$(bashio::config 'theme')
+MAX_CONCURRENT=$(bashio::config 'max_concurrent')
+TERRAFORM_VERSIONS_FOLDER=$(bashio::config 'terraform_versions_folder')
+TERRAFORM_DEFAULT_VERSION=$(bashio::config 'terraform_default_version')
+PASSWORD=$(bashio::config 'password')
+SENTINEL_CLI_PATH=$(bashio::config 'sentinel_cli_path')
+SENTINEL_GLOBAL_POLICIES=$(bashio::config 'sentinel_global_policies')
+SENTINEL_ENFORCE_ON_PLAN=$(bashio::config 'sentinel_enforce_on_plan')
+SENTINEL_ENFORCE_ON_APPLY=$(bashio::config 'sentinel_enforce_on_apply')
+METRICS_BACKEND=$(bashio::config 'metrics_backend')
+METRICS_PREFIX=$(bashio::config 'metrics_prefix')
+METRICS_INFLUXDB_URL=$(bashio::config 'metrics_influxdb_url')
+METRICS_INFLUXDB_TOKEN=$(bashio::config 'metrics_influxdb_token')
+METRICS_INFLUXDB_ORG=$(bashio::config 'metrics_influxdb_org')
+METRICS_INFLUXDB_BUCKET=$(bashio::config 'metrics_influxdb_bucket')
+METRICS_INFLUXDB_VERIFY_SSL=$(bashio::config 'metrics_influxdb_verify_ssl')
+METRICS_PROMETHEUS_URL=$(bashio::config 'metrics_prometheus_url')
+METRICS_PROMETHEUS_JOB=$(bashio::config 'metrics_prometheus_job')
+METRICS_PROMETHEUS_USERNAME=$(bashio::config 'metrics_prometheus_username')
+METRICS_PROMETHEUS_PASSWORD=$(bashio::config 'metrics_prometheus_password')
+METRICS_PROMETHEUS_VERIFY_SSL=$(bashio::config 'metrics_prometheus_verify_ssl')
+METRICS_GRAPHITE_HOST=$(bashio::config 'metrics_graphite_host')
+METRICS_GRAPHITE_PORT=$(bashio::config 'metrics_graphite_port')
+METRICS_GRAPHITE_PROTOCOL=$(bashio::config 'metrics_graphite_protocol')
+STORAGE_BACKEND=$(bashio::config 'storage_backend')
+STORAGE_S3_BUCKET=$(bashio::config 'storage_s3_bucket')
+STORAGE_S3_ACCESS_KEY=$(bashio::config 'storage_s3_access_key')
+STORAGE_S3_SECRET_KEY=$(bashio::config 'storage_s3_secret_key')
+STORAGE_S3_REGION=$(bashio::config 'storage_s3_region')
+STORAGE_S3_ENDPOINT=$(bashio::config 'storage_s3_endpoint')
+STORAGE_GCP_BUCKET=$(bashio::config 'storage_gcp_bucket')
+STORAGE_GCP_CREDENTIALS=$(bashio::config 'storage_gcp_credentials')
+STORAGE_AZURE_CONTAINER=$(bashio::config 'storage_azure_container')
+STORAGE_AZURE_CONNECTION_STRING=$(bashio::config 'storage_azure_connection_string')
+STORAGE_LOCAL_PATH=$(bashio::config 'storage_local_path')
+
 # Generate password hash from plain text password if provided
 PASSWORD_HASH=""
-if [ -n "${password}" ]; then
+if bashio::config.has_value 'password'; then
     # PBKDF2-HMAC-SHA256 with 260,000 iterations (matches TerraGUI auth.py)
     PASSWORD_HASH=$(python3 -c "
 import hashlib, secrets, sys
@@ -21,39 +61,39 @@ password = sys.argv[1]
 salt = secrets.token_hex(16)
 dk = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 260000)
 print(f'pbkdf2\$sha256\$260000\${salt}\${dk.hex()}')
-" "${password}")
+" "${PASSWORD}")
     bashio::log.info "TerraGUI: Generated password hash for portal lock"
 fi
 
 # Set TerraGUI storage backend environment variables
 # Priority: env var > tfg.conf > local (default)
-export TERRAFORM_GRAPHICAL_BACKEND="${storage_backend}"
+export TERRAFORM_GRAPHICAL_BACKEND="${STORAGE_BACKEND}"
 
-case "${storage_backend}" in
+case "${STORAGE_BACKEND}" in
     aws)
-        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${storage_s3_bucket}"
-        export TERRAFORM_GRAPHICAL_BACKEND_AWS_ACCESS_KEY_ID="${storage_s3_access_key}"
-        export TERRAFORM_GRAPHICAL_BACKEND_AWS_SECRET_ACCESS_KEY="${storage_s3_secret_key}"
-        export TERRAFORM_GRAPHICAL_BACKEND_AWS_REGION="${storage_s3_region}"
-        if [ -n "${storage_s3_endpoint}" ]; then
-            export AWS_ENDPOINT_URL="${storage_s3_endpoint}"
+        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${STORAGE_S3_BUCKET}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_ACCESS_KEY_ID="${STORAGE_S3_ACCESS_KEY}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_SECRET_ACCESS_KEY="${STORAGE_S3_SECRET_KEY}"
+        export TERRAFORM_GRAPHICAL_BACKEND_AWS_REGION="${STORAGE_S3_REGION}"
+        if [ -n "${STORAGE_S3_ENDPOINT}" ]; then
+            export AWS_ENDPOINT_URL="${STORAGE_S3_ENDPOINT}"
         fi
-        bashio::log.info "TerraGUI: Using AWS S3 storage backend (bucket: ${storage_s3_bucket})"
+        bashio::log.info "TerraGUI: Using AWS S3 storage backend (bucket: ${STORAGE_S3_BUCKET})"
         ;;
     gcp)
-        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${storage_gcp_bucket}"
-        export TERRAFORM_GRAPHICAL_BACKEND_GOOGLE_CREDENTIALS="${storage_gcp_credentials}"
-        bashio::log.info "TerraGUI: Using GCP Cloud Storage backend (bucket: ${storage_gcp_bucket})"
+        export TERRAFORM_GRAPHICAL_BACKEND_BUCKET="${STORAGE_GCP_BUCKET}"
+        export TERRAFORM_GRAPHICAL_BACKEND_GOOGLE_CREDENTIALS="${STORAGE_GCP_CREDENTIALS}"
+        bashio::log.info "TerraGUI: Using GCP Cloud Storage backend (bucket: ${STORAGE_GCP_BUCKET})"
         ;;
     azure)
-        export TERRAFORM_GRAPHICAL_BACKEND_CONTAINER="${storage_azure_container}"
-        export TERRAFORM_GRAPHICAL_BACKEND_CONNECTION_STRING="${storage_azure_connection_string}"
-        bashio::log.info "TerraGUI: Using Azure Blob Storage backend (container: ${storage_azure_container})"
+        export TERRAFORM_GRAPHICAL_BACKEND_CONTAINER="${STORAGE_AZURE_CONTAINER}"
+        export TERRAFORM_GRAPHICAL_BACKEND_CONNECTION_STRING="${STORAGE_AZURE_CONNECTION_STRING}"
+        bashio::log.info "TerraGUI: Using Azure Blob Storage backend (container: ${STORAGE_AZURE_CONTAINER})"
         ;;
     local|*)
-        export TERRAFORM_GRAPHICAL_BACKEND_LOCAL_PATH="${storage_local_path}"
-        mkdir -p "${storage_local_path}"
-        bashio::log.info "TerraGUI: Using local filesystem storage (path: ${storage_local_path})"
+        export TERRAFORM_GRAPHICAL_BACKEND_LOCAL_PATH="${STORAGE_LOCAL_PATH}"
+        mkdir -p "${STORAGE_LOCAL_PATH}"
+        bashio::log.info "TerraGUI: Using local filesystem storage (path: ${STORAGE_LOCAL_PATH})"
         ;;
 esac
 
@@ -72,31 +112,31 @@ cat > "${CONFIG_FILE}" <<EOF
 
 # Absolute path to the root directory that contains
 # your Terraform repositories / workspaces.
-repos_root = ${repos_root}
+repos_root = ${REPOS_ROOT}
 
 # ──────────────────────────────────────────────────────────────
 # UI
 # ──────────────────────────────────────────────────────────────
 [ui]
 
-site_name = ${site_name}
-repo_url = ${repo_url}
-theme = ${theme}
+site_name = ${SITE_NAME}
+repo_url = ${REPO_URL}
+theme = ${THEME}
 
 # ──────────────────────────────────────────────────────────────
 # Execution
 # ──────────────────────────────────────────────────────────────
 [execution]
 
-max_concurrent = ${max_concurrent}
+max_concurrent = ${MAX_CONCURRENT}
 
 # ──────────────────────────────────────────────────────────────
 # Terraform versions
 # ──────────────────────────────────────────────────────────────
 [terraform]
 
-versions_folder = ${terraform_versions_folder}
-default_version = ${terraform_default_version}
+versions_folder = ${TERRAFORM_VERSIONS_FOLDER}
+default_version = ${TERRAFORM_DEFAULT_VERSION}
 
 # ──────────────────────────────────────────────────────────────
 # Security (portal lock)
@@ -110,34 +150,34 @@ password_hash = ${PASSWORD_HASH}
 # ──────────────────────────────────────────────────────────────
 [sentinel]
 
-cli_path = ${sentinel_cli_path}
-global_policies = ${sentinel_global_policies}
-enforce_on_plan = ${sentinel_enforce_on_plan}
-enforce_on_apply = ${sentinel_enforce_on_apply}
+cli_path = ${SENTINEL_CLI_PATH}
+global_policies = ${SENTINEL_GLOBAL_POLICIES}
+enforce_on_plan = ${SENTINEL_ENFORCE_ON_PLAN}
+enforce_on_apply = ${SENTINEL_ENFORCE_ON_APPLY}
 
 # ──────────────────────────────────────────────────────────────
 # Metrics Export
 # ──────────────────────────────────────────────────────────────
 [metrics]
 
-backend = ${metrics_backend}
-prefix = ${metrics_prefix}
+backend = ${METRICS_BACKEND}
+prefix = ${METRICS_PREFIX}
 
-influxdb_url = ${metrics_influxdb_url}
-influxdb_token = ${metrics_influxdb_token}
-influxdb_org = ${metrics_influxdb_org}
-influxdb_bucket = ${metrics_influxdb_bucket}
-influxdb_verify_ssl = ${metrics_influxdb_verify_ssl}
+influxdb_url = ${METRICS_INFLUXDB_URL}
+influxdb_token = ${METRICS_INFLUXDB_TOKEN}
+influxdb_org = ${METRICS_INFLUXDB_ORG}
+influxdb_bucket = ${METRICS_INFLUXDB_BUCKET}
+influxdb_verify_ssl = ${METRICS_INFLUXDB_VERIFY_SSL}
 
-prometheus_url = ${metrics_prometheus_url}
-prometheus_job = ${metrics_prometheus_job}
-prometheus_username = ${metrics_prometheus_username}
-prometheus_password = ${metrics_prometheus_password}
-prometheus_verify_ssl = ${metrics_prometheus_verify_ssl}
+prometheus_url = ${METRICS_PROMETHEUS_URL}
+prometheus_job = ${METRICS_PROMETHEUS_JOB}
+prometheus_username = ${METRICS_PROMETHEUS_USERNAME}
+prometheus_password = ${METRICS_PROMETHEUS_PASSWORD}
+prometheus_verify_ssl = ${METRICS_PROMETHEUS_VERIFY_SSL}
 
-graphite_host = ${metrics_graphite_host}
-graphite_port = ${metrics_graphite_port}
-graphite_protocol = ${metrics_graphite_protocol}
+graphite_host = ${METRICS_GRAPHITE_HOST}
+graphite_port = ${METRICS_GRAPHITE_PORT}
+graphite_protocol = ${METRICS_GRAPHITE_PROTOCOL}
 EOF
 
 bashio::log.info "TerraGUI: Configuration written to ${CONFIG_FILE}"
