@@ -35,6 +35,12 @@ RUN pip3 install --no-cache-dir -e /app
 # Copy rootfs
 COPY rootfs /
 
+# Set execute permissions on scripts
+RUN chmod +x /etc/cont-init.d/terragui && \
+    chmod +x /etc/services.d/terragui/run && \
+    chmod +x /etc/services.d/terragui/finish && \
+    chmod +x /usr/local/bin/health-check
+
 # Set entrypoint
 ENTRYPOINT ["/init"]
 CMD []
