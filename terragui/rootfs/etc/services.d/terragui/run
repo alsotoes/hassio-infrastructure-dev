@@ -2,6 +2,9 @@
 # shellcheck shell=bash
 set -euo pipefail
 
+# Source bashio library
+source /usr/lib/bashio/bashio.sh
+
 bashio::log.info "TerraGUI: Starting..."
 
 # Set environment variable for app root
