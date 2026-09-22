@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-09-21
+
+### Fixed
+- Fix Python package structure: copy app/ to /app/app/ preserving package structure
+- Copy templates/ and static/ to /app/ (project root level) for _find_root_dir()
+- Install package from /app/app with pip install -e /app/app
+- Ensure /app/config directory exists for tfg.conf
+- Version bump to force HA rebuild
+
 ## [0.1.9] - 2026-09-21
 
 ### Fixed

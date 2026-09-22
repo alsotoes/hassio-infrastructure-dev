@@ -17,11 +17,11 @@ RUN apk add --no-cache \
 # Create app directory
 WORKDIR /app
 
-# Copy application source
-COPY app /app
+# Copy application source (preserving package structure)
+COPY app /app/app
 COPY templates /app/templates
 COPY static /app/static
-COPY config/tfg.conf.example /app/config/tfg.conf.example
+COPY config/tfg.conf.example /app/app/config/tfg.conf.example
 COPY run.py /app/run.py
 COPY requirements.txt /app/requirements.txt
 COPY pyproject.toml /app/pyproject.toml
@@ -30,7 +30,7 @@ COPY pyproject.toml /app/pyproject.toml
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 # Install the package in development mode
-RUN pip3 install --no-cache-dir -e /app
+RUN pip3 install --no-cache-dir -e /app/app
 
 # Copy rootfs
 COPY rootfs /

@@ -10,6 +10,7 @@ bashio::log.info "TerraGUI: Starting configuration..."
 # Create config directory
 mkdir -p /config/terraform
 mkdir -p /data
+mkdir -p /app/config
 
 # Get config values using bashio
 REPOS_ROOT=$(bashio::config 'repos_root')
