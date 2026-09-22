@@ -25,6 +25,7 @@ COPY config/tfg.conf.example /app/app/config/tfg.conf.example
 COPY run.py /app/run.py
 COPY requirements.txt /app/requirements.txt
 COPY pyproject.toml /app/pyproject.toml
+COPY pyproject.toml /app/app/pyproject.toml
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
