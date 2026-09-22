@@ -152,6 +152,64 @@ Example structure:
     └── main.tf
 ```
 
+### How Workspaces Work
+
+TerraGUI discovers workspaces by scanning `/config/terraform/` for directories containing `.tf` files. Each such directory becomes a workspace in the UI with its own:
+- Plan history
+- Variable sets
+- Execution logs
+- State file (managed by your Terraform backend config)
+
+**TerraGUI does not run Terraform on your local machine.** It executes `terraform plan/apply/destroy` **inside the HA container** using the project files in `/config/terraform/`.
+
+### Linking Local Terraform Projects to TerraGUI in HA
+
+Since TerraGUI runs inside HA, your Terraform project files must be **available inside the HA instance**. Here are the methods:
+
+#### Method 1: HA File Editor / Samba (Easiest)
+1. Install **File Editor** or **Samba** addon in HA
+2. Navigate to `/config/terraform/`
+3. Create directories and upload/copy your `.tf` files
+4. Restart TerraGUI addon
+
+#### Method 2: Git Clone Inside HA (Recommended for CI/CD)
+```bash
+# Via HA Terminal addon or SSH:
+cd /config/terraform
+git clone https://github.com/your-org/terraform-production.git production
+git clone https://github.com/your-org/terraform-staging.git staging
+```
+Then in TerraGUI UI: refresh or restart to pick up workspaces.
+
+#### Method 3: Sync from Local Dev Machine
+```bash
+# From your local machine (requires SSH access to HA):
+ssh homeassistant "mkdir -p /config/terraform"
+scp -r ./my-terraform-project homeassistant:/config/terraform/production
+
+# Or use rsync for incremental sync:
+rsync -avz --delete ./terraform-projects/ homeassistant:/config/terraform/
+```
+
+#### Method 4: CI/CD Pipeline
+In your CI/CD (GitHub Actions, GitLab CI, etc.):
+```yaml
+- name: Sync Terraform to HA
+  run: |
+    rsync -avz --delete ./terraform/ user@ha-host:/config/terraform/
+```
+Then trigger TerraGUI plan/apply via API or UI.
+
+### Important: Terraform State is Separate
+
+| What | Where |
+|------|-------|
+| **Your `.tf` project files** | `/config/terraform/` (your repos) |
+| **Terraform state (`.tfstate`)** | Your configured backend (S3, GCS, local, etc.) |
+| **TerraGUI execution history** | `/data/terraform-graphical-manager/` (or cloud storage via `storage_backend`) |
+
+TerraGUI **does not manage Terraform state** - that's handled by your `backend "s3" {}` or other backend block in your Terraform code. TerraGUI only stores its own metadata (execution logs, plan outputs, variable groups, portal lock config).
+
 ### Accessing the UI
 
 - **Ingress (recommended)**: Click "Open Web UI" in the addon panel
