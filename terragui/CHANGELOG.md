@@ -5,10 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-09-21
+
+### Fixed
+- Disable HA ingress (ingress: false) - Flask app requires root path `/`
+- HA ingress uses path-based routing (`/app/e2762f62_terragui/`) incompatible with Flask
+- Access web UI directly via port 5005: `http://homeassistant:5005/`
+
 ## [0.1.11] - 2026-09-21
 
 ### Fixed
-- Copy pyproject.toml to /app/app/pyproject.toml for pip install -e /app/app
+- Copy pyproject.toml to /app/app/pyproject.toml for editable install
 - Package needs pyproject.toml at package root for editable install
 
 ## [0.1.10] - 2026-09-21

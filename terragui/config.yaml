@@ -1,6 +1,6 @@
 ---
 name: TerraGUI Terraform Manager
-version: "0.1.11"
+version: "0.1.12"
 slug: terragui
 description: Local Terraform Cloud-like UI for managing Terraform workspaces
 url: https://github.com/alsotoes/hassio-infrastructure-dev/tree/main/terragui
@@ -17,8 +17,7 @@ ports:
 ports_description:
   5005/tcp: "TerraGUI web interface"
 webui: "http://[HOST]:[PORT:5005]/"
-ingress: true
-ingress_port: 5005
+ingress: false
 map:
   - config:rw
   - data:rw
